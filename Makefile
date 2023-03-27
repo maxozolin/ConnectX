@@ -3,6 +3,7 @@ M?=7
 N?=4 # Number of things to connnect
 CPU_1?=connectx.L1.L1 
 CPU_2?=connectx.MxLxPlayer.MxLxPlayer
+CPU_H?=connectx.LH.LH
 R?=3 # Number of rounds when testing automatically
 V?=0 # Verbose test output
 
@@ -25,5 +26,15 @@ play_cc: compile
 play_hc: compile
 	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_1)
 
+make_attack_jar:
+	cd LH && \
+	javac Launcher.java && \
+	jar -m manifest.txt -c -v -f Launcher.jar Launcher.class
+
+
+play_c_hack: compile make_attack_jar
+	java -cp ".." -Djdk.attach.allowAttachSelf=true connectx.CXGame $(K) $(M) $(N) $(CPU_1) $(CPU_H)
+
 test_cc: compile
 	java -cp ".." connectx.CXPlayerTester $(K) $(M) $(N) $(CPU_1) $(CPU_2) -r $(R) $(__extraparams)
+
