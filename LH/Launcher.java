@@ -9,6 +9,7 @@ public class Launcher {
     public static void agentmain(String agentArgs, Instrumentation inst) {
       System.out.println("Hi agenmain");
       System.out.println(inst.isRedefineClassesSupported());
+
     }
     public static void premain(String agentArgs, Instrumentation inst) {
  

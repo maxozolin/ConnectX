@@ -26,14 +26,19 @@ play_cc: compile
 play_hc: compile
 	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_1)
 
-make_attack_jar:
+build_attacher:
+	cd LH/attacher && \
+	make build
+
+
+make_attack_jar: build_attacher
 	cd LH && \
 	javac Launcher.java && \
 	jar -m manifest.txt -c -v -f Launcher.jar Launcher.class
 
 
 play_c_hack: compile make_attack_jar
-	java -cp ".." -Djdk.attach.allowAttachSelf=true connectx.CXGame $(K) $(M) $(N) $(CPU_1) $(CPU_H)
+	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_1) $(CPU_H)
 
 test_cc: compile
 	java -cp ".." connectx.CXPlayerTester $(K) $(M) $(N) $(CPU_1) $(CPU_2) -r $(R) $(__extraparams)

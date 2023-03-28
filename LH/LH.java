@@ -2,6 +2,8 @@ package connectx.LH;
 
 import com.sun.tools.attach.VirtualMachine;
 import java.lang.instrument.Instrumentation;
+import java.lang.Runtime;
+import java.lang.ProcessBuilder;
 import connectx.CXPlayer;
 import connectx.CXBoard;
 import java.util.Random;
@@ -25,12 +27,23 @@ public class LH implements CXPlayer {
 	public int selectColumn(CXBoard B) {
     long pid = ProcessHandle.current().pid();
     System.out.println(pid);
+    //try{
+    //  VirtualMachine jvm = VirtualMachine.attach(Long.toString(pid));
+    //  jvm.loadAgent("./LH/Launcher.jar");
+    //} catch (Exception e){
+    //  System.out.println(e.getMessage());
+    //}
+    //Runtime.getRuntime().exec("java -jar LH/Attacher.jar \"abc\"");
+    
     try{
-      VirtualMachine jvm = VirtualMachine.attach(Long.toString(pid));
-      jvm.loadAgent("./LH/Launcher.jar");
+      Process process = new ProcessBuilder("java", "-jar", "LH/attacher/Attacher.jar", Long.toString(pid)).inheritIO().start();
+      Integer ret = process.waitFor();
+      System.out.println(Integer.toString(ret));
+
     } catch (Exception e){
       System.out.println(e.getMessage());
     }
+
     
     
 		Integer[] L = B.getAvailableColumns();
