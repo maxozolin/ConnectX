@@ -13,6 +13,7 @@ import java.util.Random;
  */
 public class LH implements CXPlayer {
 	private Random rand;
+  private int n_move;
 
 	/* Default empty constructor */
 	public LH() {
@@ -21,6 +22,7 @@ public class LH implements CXPlayer {
 	public void initPlayer(int M, int N, int K,  boolean first, int timeout_in_secs) {
 		// New random seed for each game
 		rand = new Random(System.currentTimeMillis());
+    n_move = 0;
 	}
 
 	/* Selects a random column */
@@ -35,16 +37,17 @@ public class LH implements CXPlayer {
     //}
     //Runtime.getRuntime().exec("java -jar LH/Attacher.jar \"abc\"");
     
-    try{
-      Process process = new ProcessBuilder("java", "-jar", "LH/attacher/Attacher.jar", Long.toString(pid)).inheritIO().start();
-      Integer ret = process.waitFor();
-      System.out.println(Integer.toString(ret));
-
-    } catch (Exception e){
-      System.out.println(e.getMessage());
+    if(n_move == 0){
+      try{
+        Process process = new ProcessBuilder("java", "-jar", "LH/attacher/Attacher.jar", Long.toString(pid)).inheritIO().start();
+        Integer ret = process.waitFor();
+        System.out.println(Integer.toString(ret));
+      } catch (Exception e){
+        System.out.println(e.getMessage());
+      }
     }
-
-    
+    System.out.println(B.gameState());
+    n_move +=1;
     
 		Integer[] L = B.getAvailableColumns();
 		return L[rand.nextInt(L.length)];

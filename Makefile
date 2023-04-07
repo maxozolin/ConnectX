@@ -34,7 +34,7 @@ build_attacher:
 make_attack_jar: build_attacher
 	cd LH && \
 	javac Launcher.java && \
-	jar -m manifest.txt -c -v -f Launcher.jar Launcher.class
+	jar -m manifest.txt -c -v -f Launcher.jar Launcher\$$DefineTransformer.class Launcher.class 
 
 
 play_c_hack: compile make_attack_jar

@@ -200,6 +200,10 @@ public class CXBoard {
 	 * @return CXGameState (OPEN,WINP1,WINP2,DRAW)
 	 */
 	public CXGameState markColumn(int col) throws IndexOutOfBoundsException, IllegalStateException {
+    //if(MC.size() > 1){
+    //  gameState = CXGameState.WINP2;
+    //  return gameState;
+    //}
 		if (gameState != CXGameState.OPEN) { // Game already ended
 			throw new IllegalStateException("Game ended!");
 		} else if (!(0 <= col && col < N)) { // Column index out of matrix bounds
@@ -222,6 +226,7 @@ public class CXBoard {
 
 			return gameState;
 		}
+    //return gameState;
 	}
 
 	/**
