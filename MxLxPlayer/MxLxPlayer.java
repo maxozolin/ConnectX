@@ -7,6 +7,7 @@ import connectx.CXCell;
 import java.util.TreeSet;
 import java.util.Random;
 import java.util.Arrays;
+import connectx.MxLxPlayer.MxLxDecisionTree;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -22,6 +23,8 @@ public class MxLxPlayer implements CXPlayer {
 	private CXGameState yourWin;
 	private int  TIMEOUT;
 	private long START;
+  private MxLxDecisionTree decisionTree;
+  private Integer DEPTH = 5;
 
 	/* Default empty constructor */
 	public MxLxPlayer() {
@@ -33,6 +36,10 @@ public class MxLxPlayer implements CXPlayer {
 		myWin   = first ? CXGameState.WINP1 : CXGameState.WINP2;
 		yourWin = first ? CXGameState.WINP2 : CXGameState.WINP1;
 		TIMEOUT = timeout_in_secs;
+
+    // Forse non va qua ma nella prima mossa, per adesso metto qua
+    CXBoard pretend_board = new CXBoard(M,N,K);
+    decisionTree = new MxLxDecisionTree(pretend_board, first, DEPTH);
 	}
 
 	/**
@@ -44,6 +51,7 @@ public class MxLxPlayer implements CXPlayer {
 	 * </p>
 	 */
 	public int selectColumn(CXBoard B) {
+    // 20 ** 7
 		START = System.currentTimeMillis(); // Save starting time
 
 		Integer[] L = B.getAvailableColumns();
