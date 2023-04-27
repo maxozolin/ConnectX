@@ -18,7 +18,7 @@ public class MxLxDecider {
   //This function should compute the values with the weights based on the Heuristics
   //Heuristic value generations should be based on Nodes, and handeled in the Heuristics class
   //This implementation should not know about how to calculate Heuristics, only how 'Important' it is in the game
-  //The weights should be assigned in the MxLxPlayer.Configuration class
+  //The weights should be assigned in the MxLxPlayer.Configuration class 
   public static Integer compute_with_weights(Heuristics hr){
     return 1;
   }
