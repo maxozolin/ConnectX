@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import java.util.Random;
 import java.util.Arrays;
 import connectx.MxLxPlayer.MxLxDecisionTree;
+import connectx.MxLxPlayer.TreePrinter;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -40,6 +41,7 @@ public class MxLxPlayer implements CXPlayer {
     // Forse non va qua ma nella prima mossa, per adesso metto qua
     CXBoard pretend_board = new CXBoard(M,N,K);
     decisionTree = new MxLxDecisionTree(pretend_board, first, DEPTH);
+    //TreePrinter.printTree(decisionTree);
 	}
 
 	/**
@@ -56,6 +58,7 @@ public class MxLxPlayer implements CXPlayer {
 
 		Integer[] L = B.getAvailableColumns();
 		int save    = L[rand.nextInt(L.length)]; // Save a random column 
+    //TreePrinter.printTree(decisionTree);
 
 		try {
 			int col = singleMoveWin(B,L);
