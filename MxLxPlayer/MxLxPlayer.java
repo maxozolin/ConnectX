@@ -40,7 +40,7 @@ public class MxLxPlayer implements CXPlayer {
     // Forse non va qua ma nella prima mossa, per adesso metto qua
     CXBoard pretend_board = new CXBoard(M, N, K);
     decisionTree = new MxLxDecisionTree(pretend_board, first, DEPTH);
-    TreePrinter.printTree(decisionTree);
+    // TreePrinter.printTree(decisionTree);
   }
 
   /**

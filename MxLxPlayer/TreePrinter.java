@@ -6,8 +6,8 @@ import connectx.MxLxPlayer.Tree;
 
 public class TreePrinter {
   public static String _get_node_name(Node node) {
-    //return "*".toString();
-    return String.format("%s", node.parent);
+    // return "*".toString();
+    return String.format("%s", node.player);
   }
 
   public static void traversePreOrder(StringBuilder sb, String padding, String pointer, Node node) {
@@ -19,9 +19,9 @@ public class TreePrinter {
 
       StringBuilder paddingBuilder = new StringBuilder(padding);
       paddingBuilder.append(" ");
-      String paddingForBoth=paddingBuilder.toString();
+      String paddingForBoth = paddingBuilder.toString();
 
-      //String pointerLeft = (node.getRight() != null) ? "├──" : "└──";
+      // String pointerLeft = (node.getRight() != null) ? "├──" : "└──";
       String pointerLeft = "└- ";
 
       for (int i = 0; i < node.children.size(); i++) {
@@ -33,7 +33,7 @@ public class TreePrinter {
   // Maybe add a name getter callable with signature (node) -> String as parameter
   public static void printTree(MxLxDecisionTree decison_tree) {
     StringBuilder sb = new StringBuilder();
-    traversePreOrder(sb,"","", decison_tree.tree.root);
+    traversePreOrder(sb, "", "", decison_tree.tree.root);
     System.out.println(sb.toString());
   }
 }
