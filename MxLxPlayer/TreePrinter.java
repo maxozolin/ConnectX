@@ -6,7 +6,8 @@ import connectx.MxLxPlayer.Tree;
 
 public class TreePrinter {
   public static String _get_node_name(Node node) {
-    return "*".toString();
+    //return "*".toString();
+    return String.format("%s", node.parent);
   }
 
   public static void traversePreOrder(StringBuilder sb, String padding, String pointer, Node node) {

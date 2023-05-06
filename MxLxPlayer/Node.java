@@ -7,8 +7,9 @@ public class Node {
     CXBoard board;
     boolean player;
     List<Node> children;
+    Node parent;
     
-    public Node(CXBoard iboard,boolean iplayer){
+    public Node(CXBoard iboard, boolean iplayer){
       board = iboard;
       player = iplayer;
       children = new ArrayList<Node>();

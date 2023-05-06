@@ -19,6 +19,8 @@ public class MxLxDecisionTree{
       CXBoard new_b = leaf.board.copy();
       new_b.markColumn(i);
       Node new_node = new Node(new_b,!leaf.player);
+      new_node.parent=leaf;
+
       leaf.children.add(new_node);
     }
   }
