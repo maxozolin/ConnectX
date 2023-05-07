@@ -40,6 +40,6 @@ make_attack_jar: build_attacher
 play_c_hack: compile make_attack_jar
 	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_1) $(CPU_H)
 
-test_cc: compile
-	java -cp ".." connectx.CXPlayerTester $(K) $(M) $(N) $(CPU_1) $(CPU_2) -r $(R) $(__extraparams)
+test_cc: compile make_attack_jar
+	java -cp ".." connectx.CXPlayerTester $(K) $(M) $(N) $(CPU_1) $(CPU_H) -r $(R) $(__extraparams)
 
