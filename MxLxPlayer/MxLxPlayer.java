@@ -52,6 +52,7 @@ public class MxLxPlayer implements CXPlayer {
    * </p>
    */
   public int selectColumn(CXBoard B) {
+    EfficientBoard.efficientMarkColumn(1, B);
     // 20 ** 7
     START = System.currentTimeMillis(); // Save starting time
 
