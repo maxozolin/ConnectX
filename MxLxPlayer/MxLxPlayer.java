@@ -2,11 +2,15 @@ package connectx.MxLxPlayer;
 
 import connectx.CXBoard;
 import connectx.CXCell;
+import connectx.CXCellState;
 import connectx.CXGameState;
 import connectx.CXPlayer;
+import connectx.MxLxPlayer.IllegalyEfficientBoard;
 import connectx.MxLxPlayer.MxLxDecisionTree;
 import connectx.MxLxPlayer.TreePrinter;
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.TimeoutException;
@@ -52,7 +56,6 @@ public class MxLxPlayer implements CXPlayer {
    * </p>
    */
   public int selectColumn(CXBoard B) {
-    EfficientBoard.efficientMarkColumn(1, B);
     // 20 ** 7
     START = System.currentTimeMillis(); // Save starting time
 
@@ -64,8 +67,14 @@ public class MxLxPlayer implements CXPlayer {
       int col = singleMoveWin(B, L);
       if (col != -1)
         return col;
-      else
-        return singleMoveBlock(B, L);
+
+      col = singleMoveBlock(B, L);
+      if (col != -1) {
+        System.out.printf("ABOUT TO LOSE!: col[%s]\n", col);
+        return col;
+      }
+
+      return save;
     } catch (TimeoutException e) {
       System.err.println("Timeout!!! Random column selected");
       return save;
@@ -76,7 +85,6 @@ public class MxLxPlayer implements CXPlayer {
     if ((System.currentTimeMillis() - START) / 1000.0 >= TIMEOUT * (99.0 / 100.0))
       throw new TimeoutException();
   }
-
   /**
    * Check if we can win in a single move
    *
@@ -99,37 +107,42 @@ public class MxLxPlayer implements CXPlayer {
    * Returns a blocking column if there is one, otherwise a random one
    */
   private int singleMoveBlock(CXBoard B, Integer[] L) throws TimeoutException {
-    TreeSet<Integer> T = new TreeSet<Integer>(); // We collect here safe column indexes
+    // Single move block implementation was O(L.size()^{2}), which is bad.
+    // We can make it O(L.size())
+    // Returns -1 if no need to block
+    // If no way to block will still return the first in case opposite AI is dumb and we can block
+    // both in time :)
 
-    for (int i : L) {
-      checktime();
-      T.add(i); // We consider column i as a possible move
-      B.markColumn(i);
-
-      int j;
-      boolean stop;
-
-      for (j = 0, stop = false; j < L.length && !stop; j++) {
-        // try {Thread.sleep((int)(0.2*1000*TIMEOUT));} catch (Exception e) {} // Uncomment to test
-        // timeout
-        checktime();
-        if (!B.fullColumn(L[j])) {
-          CXGameState state = B.markColumn(L[j]);
-          if (state == yourWin) {
-            T.remove(i); // We ignore the i-th column as a possible move
-            stop = true; // We don't need to check more
-          }
-          B.unmarkColumn(); //
+    int ret = -1;
+    IllegalyEfficientBoard.swapCurrentPlayer(B);
+    try {
+      Class<?> cls = Class.forName("connectx.CXBoard");
+      Field mc_field = cls.getDeclaredField("MC");
+      mc_field.setAccessible(true);
+      LinkedList<CXCell> MC = (LinkedList<CXCell>) mc_field.get(B);
+      System.out.printf("MC: [\n");
+      for(CXCell c : MC){
+        System.out.printf(" ( c: %s | r: %s | %s ) ,\n", c.j, c.i, c.state);
+      }
+      System.out.printf("]\n");
+      System.out.printf("COLS:\t");
+      for (int i : L) {
+        CXGameState marked = B.markColumn(i);
+        System.out.printf("%s:%s\t", i, marked);
+        B.unmarkColumn();
+        if (marked == yourWin) {
+          ret = i;
+          break;
         }
       }
-      B.unmarkColumn();
-    }
+      System.out.printf("\n");
+      System.out.printf("%s\n", yourWin);
+      System.out.printf("CURRENT: %s\n", B.currentPlayer());
 
-    if (T.size() > 0) {
-      Integer[] X = T.toArray(new Integer[T.size()]);
-      return X[rand.nextInt(X.length)];
-    } else {
-      return L[rand.nextInt(L.length)];
+      return ret;
+    } catch (Exception e) {
+      System.err.println(e);
+      return -1;
     }
   }
 

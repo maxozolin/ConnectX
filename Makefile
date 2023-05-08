@@ -8,7 +8,11 @@ V?=0 # Verbose test output
 
 
 ifeq ($(V), 1)
-	__extraparams=-v
+	__extraparams+= -v
+endif
+
+ifeq ($(G), 1)
+	__extraparams+= -g
 endif
 
 .PHONY: compile
@@ -23,7 +27,7 @@ play_cc: compile
 # Play human-computer
 # Compiles and then launches the game against bot specified in CPU_1
 play_hc: compile
-	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_1)
+	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_2)
 
 test_cc: compile
 	java -cp ".." connectx.CXPlayerTester $(K) $(M) $(N) $(CPU_1) $(CPU_2) -r $(R) $(__extraparams)
