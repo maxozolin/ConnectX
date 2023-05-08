@@ -10,6 +10,7 @@ import connectx.MxLxPlayer.MxLxDecisionTree;
 import connectx.MxLxPlayer.TreePrinter;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Arrays.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeSet;
@@ -71,15 +72,27 @@ public class MxLxPlayer implements CXPlayer {
 
       col = singleMoveBlock(B, L);
       if (col != -1) {
-        System.out.printf("ABOUT TO LOSE!: col[%s]\n", col);
         return col;
       }
+
+      Integer[] L_not_stupid = notOponentWinsNext(L);
 
       return save;
     } catch (TimeoutException e) {
       System.err.println("Timeout!!! Random column selected");
       return save;
     }
+  }
+
+  private Integer[] notOponentWinsNext(Integer[] L){
+    List<Integer> myList = new ArrayList<Integer>();
+    for (int i: L){
+      B.markColumn(i);
+      CXGameState state = B.markColumn(i);
+      if (state != yourWin)
+        newL.add(i);
+    }
+    return newL.toArray(new Integer[newL.size()]);
   }
 
   private void checktime() throws TimeoutException {
