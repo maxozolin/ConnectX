@@ -94,7 +94,7 @@ public class IllegalyEfficientBoard {
 
       curr_player_field.setInt(b, currentPlayer);
     } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-      System.err.println("Could not Illegaly swap :(((( !$?$!%^&");
+      System.err.println("Could not Illegaly swap :(");
       System.err.println(e);
     }
   }
