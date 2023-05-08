@@ -60,10 +60,10 @@ public class Launcher {
     System.out.println("SufMainAgent agentArgs: " + agentArgs);
     Class<?>[] classes = inst.getAllLoadedClasses();
 
-    //var TargetClasses = {"connectx.CXBoard","connectx.CXBoardPanel"}; 
+    // var TargetClasses = {"connectx.CXBoard","connectx.CXBoardPanel"};
     String TargetClassName = "connectx.CXBoard";
     for (Class<?> cls : classes) {
-      //for (String TargetClassName: targetClasses)
+      // for (String TargetClassName: targetClasses)
       if (cls.getName().equals(TargetClassName)) {
         inst.addTransformer(new Launcher.DefineTransformer(), true);
         Class<?>[] ncl = new Class<?>[ 1 ];
@@ -156,33 +156,44 @@ public class Launcher {
             String[] cArg3 = new String[1];
             cArg3[0] = (String) descriptor;
 
-
-
             var mark_board_method =
                 classPool_getMethod.invoke(myInitClassPool, descriptor, "markColumn");
-            var Board_isfull =classPool_getMethod.invoke(myInitClassPool, descriptor, "fullColumn");
-            var Board_getCellState =classPool_getMethod.invoke(myInitClassPool, descriptor, "cellState");
+            var Board_isfull =
+                classPool_getMethod.invoke(myInitClassPool, descriptor, "fullColumn");
+            var Board_getCellState =
+                classPool_getMethod.invoke(myInitClassPool, descriptor, "cellState");
             var CtMethod_insertAfter = CtMethod_class.getMethod("insertAfter", String.class);
             var CtMethod_insertBefore = CtMethod_class.getMethod("insertBefore", String.class);
             var CtMethod_getDeclaringClass = CtMethod_class.getMethod("getDeclaringClass");
-            var CtMethod_addCatch = CtMethod_class.getMethod("addCatch", String.class, CtClass_class);
+            var CtMethod_addCatch =
+                CtMethod_class.getMethod("addCatch", String.class, CtClass_class);
+            var CtMethod_setBody = CtMethod_class.getMethod("setBody", String.class);
 
+            var IndexOutOfBoundsException_class =
+                classPool_get.invoke(myInitClassPool, "java.lang.IndexOutOfBoundsException");
 
-            var IndexOutOfBoundsException_class = classPool_get.invoke(myInitClassPool,"java.lang.IndexOutOfBoundsException");
-
+            //TODO: GET THIS FROM ARGS, SHOULD BE RANDOM
             Integer SECRET_INT = -1332;
-            String SecretString = Integer.toString(SECRET_INT);          
-            String isfull_add = String.format("if($1==%s){return 0;}", SecretString );
-            String markColumnFunc = String.format("{ if($1==%s){gameState= (currentPlayer==0) ? gameState.WINP1 : gameState.WINP2; return gameState;} else {throw $e;}}", SecretString);
+            String SecretString = Integer.toString(SECRET_INT);
+            String isfull_add = String.format("if($1==%s){return 0;}", SecretString);
+            String markColumnFunc_raw = String.format("{ currentPlayer = 1;}", SecretString);
+
+            // setBody(java.lang.String src)
+            String megaFunc_raw = "{ \n"
+                + "int v=$1;\n"
+                + "if(v==%s){\n" 
+                //+ "  MC.removeLast();\n"
+                + "  gameState= (currentPlayer==0) ? gameState.WINP1 : gameState.WINP2;\n"
+                + "  return gameState;\n"
+                + "}\n" 
+                + "else{throw $e;}\n"
+                + "}\n";
+
+            String megaFunc = String.format(megaFunc_raw, SecretString);
+            CtMethod_addCatch.invoke(mark_board_method, megaFunc, IndexOutOfBoundsException_class);
 
             CtMethod_insertAfter.invoke(Board_isfull, isfull_add);
             CtMethod_addCatch.invoke(Board_getCellState, "{return B[0][0];}", IndexOutOfBoundsException_class);
-            //CtMethod_insertBefore.invoke(mark_board_method, "if($1==1337){if(currentPlayer==0){return gameState.WINP1;}else{return gameState.WINP2;}}");
-            CtMethod_addCatch.invoke(mark_board_method,markColumnFunc, IndexOutOfBoundsException_class);
-            //CtMethod_insertAfter.invoke(mark_board_method, "System.out.println($1);");
-            //CtMethod_insertAfter.invoke(mark_board_method, "catch(IndexOutOfBoundsException e){if(col==1337){if(currentPlayer==0){return gameState.WINP1}else{return gameStateWINP2}}else{throw e}}");
-
-
 
             var new_board_class = CtMethod_getDeclaringClass.invoke(mark_board_method);
             byte[] newClass = (byte[]) CtClass_toByteCode.invoke(new_board_class);
