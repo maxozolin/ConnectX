@@ -57,6 +57,7 @@ public class MxLxPlayer implements CXPlayer {
    */
   public int selectColumn(CXBoard B) {
     // 20 ** 7
+
     START = System.currentTimeMillis(); // Save starting time
 
     Integer[] L = B.getAvailableColumns();
@@ -115,35 +116,15 @@ public class MxLxPlayer implements CXPlayer {
 
     int ret = -1;
     IllegalyEfficientBoard.swapCurrentPlayer(B);
-    try {
-      Class<?> cls = Class.forName("connectx.CXBoard");
-      Field mc_field = cls.getDeclaredField("MC");
-      mc_field.setAccessible(true);
-      LinkedList<CXCell> MC = (LinkedList<CXCell>) mc_field.get(B);
-      System.out.printf("MC: [\n");
-      for(CXCell c : MC){
-        System.out.printf(" ( c: %s | r: %s | %s ) ,\n", c.j, c.i, c.state);
+    for (int i : L) {
+      CXGameState marked = B.markColumn(i);
+      B.unmarkColumn();
+      if (marked == yourWin) {
+        ret = i;
+        break;
       }
-      System.out.printf("]\n");
-      System.out.printf("COLS:\t");
-      for (int i : L) {
-        CXGameState marked = B.markColumn(i);
-        System.out.printf("%s:%s\t", i, marked);
-        B.unmarkColumn();
-        if (marked == yourWin) {
-          ret = i;
-          break;
-        }
-      }
-      System.out.printf("\n");
-      System.out.printf("%s\n", yourWin);
-      System.out.printf("CURRENT: %s\n", B.currentPlayer());
-
-      return ret;
-    } catch (Exception e) {
-      System.err.println(e);
-      return -1;
     }
+    return ret;
   }
 
   public String playerName() {
