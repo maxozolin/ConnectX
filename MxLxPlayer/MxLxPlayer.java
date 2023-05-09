@@ -10,7 +10,6 @@ import connectx.MxLxPlayer.MxLxDecisionTree;
 import connectx.MxLxPlayer.TreePrinter;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Arrays.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeSet;
@@ -56,8 +55,43 @@ public class MxLxPlayer implements CXPlayer {
    * cases do not apply, selects a random column.
    * </p>
    */
+
+  public void debug_RP(CXBoard B){
+
+    //for (int i=0;i<B.RP.length;i++){
+    //  System.out.printf("======");
+    //}
+    //System.out.println();
+    //System.out.printf("|");
+    //for (int i=0;i<B.RP.length;i++){
+    //  System.out.printf(" %s  | ", i );
+    //}
+    //System.out.println();
+    //for (int i=0;i<B.RP.length;i++){
+    //  System.out.printf("------");
+    //}
+    //System.out.println();
+    //System.out.printf("|");
+    //for (int i=0;i<B.RP.length;i++){
+    //  System.out.printf(" %s  | " , B.RP[i]);
+    //}
+    //System.out.println();
+    //for (int i=0;i<B.RP.length;i++){
+    //  System.out.printf("======");
+    //}
+    //System.out.println();
+  }
+
   public int selectColumn(CXBoard B) {
     // 20 ** 7
+    //int rows = B.B.length;
+    //int cols = B.B[0].length;
+    //for (int i = 0; i < rows; i++) {
+    //  for (int j = 0; j < cols; j++) {
+    //    System.out.printf(" [%s] ", B.B[i][j].toString().charAt(1));
+    //  }
+    //  System.out.println();
+    //}
 
     START = System.currentTimeMillis(); // Save starting time
 
@@ -67,15 +101,25 @@ public class MxLxPlayer implements CXPlayer {
 
     try {
       int col = singleMoveWin(B, L);
-      if (col != -1)
-        return col;
-
-      col = singleMoveBlock(B, L);
-      if (col != -1) {
+      if (col != -1){
+        System.err.printf("Can win: %s\n", col);
         return col;
       }
 
-      Integer[] L_not_stupid = notOponentWinsNext(L);
+      col = singleMoveBlock(B, L);
+      if (col != -1) {
+        System.err.printf("Have to block: %s\n", col);
+        return col;
+      }
+
+      Integer[] L_not_stupid = notOponentWinsNext(L, B);
+
+      //System.out.println(save);
+      //We might only have stupid moves left, don't want to error out
+      if(L_not_stupid.length > 0){
+        save = L_not_stupid[rand.nextInt(L_not_stupid.length)]; // Save a random column
+        //System.out.println(save);
+      }
 
       return save;
     } catch (TimeoutException e) {
@@ -84,14 +128,29 @@ public class MxLxPlayer implements CXPlayer {
     }
   }
 
-  private Integer[] notOponentWinsNext(Integer[] L){
-    List<Integer> myList = new ArrayList<Integer>();
-    for (int i: L){
+  private Integer[] notOponentWinsNext(Integer[] L,CXBoard B){
+
+    LinkedList<Integer> newL = new LinkedList();
+    for (Integer i: L){
+      CXGameState state = CXGameState.OPEN;
       B.markColumn(i);
-      CXGameState state = B.markColumn(i);
-      if (state != yourWin)
+      // Puo succedere che c'e solo un posto rimanente nella colonna
+      // e mettere un secondo sarebbe illegale
+      try{
+        state = B.markColumn(i);
+        B.unmarkColumn();
+      } catch (IllegalStateException e){
+        //System.err.println(e.getMessage());
+      }
+      B.unmarkColumn();
+      if (state != yourWin){
         newL.add(i);
+      }
+      else {
+        System.err.printf("Avoiding stupid move [OpponentWinsNext]: %s\n", i);
+      }
     }
+
     return newL.toArray(new Integer[newL.size()]);
   }
 
@@ -105,12 +164,12 @@ public class MxLxPlayer implements CXPlayer {
    * Returns the winning column if there is one, otherwise -1
    */
   private int singleMoveWin(CXBoard B, Integer[] L) throws TimeoutException {
-    for (int i : L) {
+    for (Integer i : L) {
       checktime(); // Check timeout at every iteration
       CXGameState state = B.markColumn(i);
+      B.unmarkColumn();
       if (state == myWin)
         return i; // Winning column found: return immediately
-      B.unmarkColumn();
     }
     return -1;
   }
@@ -128,7 +187,9 @@ public class MxLxPlayer implements CXPlayer {
     // both in time :)
 
     int ret = -1;
+
     IllegalyEfficientBoard.swapCurrentPlayer(B);
+
     for (int i : L) {
       CXGameState marked = B.markColumn(i);
       B.unmarkColumn();
@@ -137,6 +198,9 @@ public class MxLxPlayer implements CXPlayer {
         break;
       }
     }
+
+    IllegalyEfficientBoard.swapCurrentPlayer(B);
+
     return ret;
   }
 
