@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class MxLxDecisionTree{
-  private Integer current_depth;
+    private Integer current_depth;
 	public Tree tree;
   /* Default empty constructor */
 	public MxLxDecisionTree(CXBoard B, boolean first, Integer depth) {

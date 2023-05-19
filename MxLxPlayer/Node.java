@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Node {
     // TODO:
-    // Valutrare non salvare tutta la scacchiera ma solo [i] che e' la casella salvata
+    // Valutare non salvare tutta la scacchiera ma solo [i] che e' la casella salvata
     // In tal caso per arrivare alla posizione serve O(logn * {tempo per simulare la mossa})
     // Per resettare la posizione e tornare alla posizione precedente O(logn * {tempo per rimuovere un pezzo dalla scacchiera})
     CXBoard board;

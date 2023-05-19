@@ -52,4 +52,19 @@ public class CXCell {
 		this.j = j;
 		this.state = state;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof CXCell)) {
+			return false;
+		}
+
+		CXCell cell = (CXCell) o;
+		return cell.i == this.i && cell.j == this.j && cell.state == this.state;
+	}
+
+	@Override
+	public int hashCode() {
+		return i + j * 17;
+	}
 }
