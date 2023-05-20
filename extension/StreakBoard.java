@@ -4,6 +4,7 @@ import connectx.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -20,7 +21,7 @@ public class StreakBoard extends CXBoard {
     }
 
     public List<Streak> getStreaksP2() {
-        return streaksP1;
+        return streaksP2;
     }
 
     /**
@@ -54,12 +55,14 @@ public class StreakBoard extends CXBoard {
     public CXGameState markColumn(int col) throws IndexOutOfBoundsException, IllegalStateException {
         markCount++;
         // Prendiamo qui il currentPlayer perché cambierà dopo il metodo super::markColumn
-        final int currentPlayer = this.currentPlayer;
+        final int currentPlayer = super.currentPlayer;
 
         final CXGameState gameState = super.markColumn(col);
 
         final CXCell lastCell = getLastMove();
         insertStreaksIntoCell(lastCell, currentPlayer);
+        updateStreaks(lastCell, streaksP1);
+        updateStreaks(lastCell, streaksP2);
 
         return gameState;
     }
@@ -89,29 +92,45 @@ public class StreakBoard extends CXBoard {
 
         for (Streak streak : streaksList) {
             if (currentPlayer == 0) {
-                if (streaksP1.isEmpty()) {
-                    streaksP1.add(streak);
-                } else {
-                    int index = streaksP1.indexOf(streak);
-                    if (index == -1) {
-                        streaksP1.add(streak);
-                    } else {
-                        // Update
-                        streaksP1.set(index, streak);
-                    }
-                }
+                substituteOrAddStreak(streaksP1, streak);
             } else {
-                if (streaksP2.isEmpty()) {
-                    streaksP2.add(streak);
+                substituteOrAddStreak(streaksP2, streak);
+            }
+        }
+    }
+
+    private void updateStreaks(CXCell lastCell, List<Streak> streaks) {
+        for (Streak streak : streaks) {
+            streak.checkValidity();
+        }
+        /*
+        Iterator<Streak> streakIterator = streaks.iterator();
+
+        while (streakIterator.hasNext()) {
+            Streak streak = streakIterator.next();
+
+            if (streak.cells.contains(lastCell)) {
+                if (streak.state != lastCell.state && lastCell.state != CXCellState.FREE) {
+                    // streakIterator.remove();
+                    streak.checkValidity();
                 } else {
-                    int index = streaksP2.indexOf(streak);
-                    if (index == -1) {
-                        streaksP2.add(streak);
-                    } else {
-                        // Update
-                        streaksP2.set(index, streak);
-                    }
+                    int index = streak.cells.indexOf(lastCell);
+                    streak.cells.set(index, lastCell);
                 }
+            }
+        }*/
+    }
+
+    private void substituteOrAddStreak(List<Streak> streaks, Streak newStreak) {
+        if (streaks.isEmpty()) {
+            streaks.add(newStreak);
+        } else {
+            int index = streaks.indexOf(newStreak);
+            if (index == -1) {
+                streaks.add(newStreak);
+            } else {
+                // Update
+                streaks.set(index, newStreak);
             }
         }
     }
@@ -131,6 +150,7 @@ public class StreakBoard extends CXBoard {
     }
 
     private void updateStreaksAfterUndoMove(List<Streak> streaks, CXCell cellMove) {
+        /*
         for (Streak streak : streaks) {
             // TODO: Optimize cycle
             for (int i = 0; i < streak.cells.size(); i++) {
@@ -140,7 +160,7 @@ public class StreakBoard extends CXBoard {
                     streak.checkValidity();
                 }
             }
-        }
+        }*/
     }
 
     /**
@@ -191,11 +211,11 @@ public class StreakBoard extends CXBoard {
 
             List<CXCell> streak = new ArrayList<>(X);
             streak.add(cell);
-            for (int i = 1; i <= X; i++) {
+            for (int i = 1; i <= X-1; i++) {
                 streak.add(new CXCell(row-i, col, CXCellState.FREE));
             }
 
-            streaks.add(Streak.getUniformStreak(streak, cell.state));
+            streaks.add(Streak.getUniformStreak(this, streak, cell.state));
         }
 
         // 2. Direzione a sx
@@ -203,7 +223,8 @@ public class StreakBoard extends CXBoard {
             final List<CXCell> streak = getStreakFromDiagonal(cell, 0, -1);
 
             if (streak != null) {
-                streaks.add(Streak.getUniformStreak(streak, cell.state));
+                // streaks.add(Streak.getUniformStreak(streak, cell.state));
+                substituteOrAddStreak(streaks, Streak.getUniformStreak(this, streak, cell.state));
             }
         } // Se X > col + 1, non c'è abbastanza spazio a sx
 
@@ -212,7 +233,8 @@ public class StreakBoard extends CXBoard {
             final List<CXCell> streak = getStreakFromDiagonal(cell, 0, +1);
 
             if (streak != null) {
-                streaks.add(Streak.getUniformStreak(streak, cell.state));
+                // streaks.add(Streak.getUniformStreak(streak, cell.state));
+                substituteOrAddStreak(streaks, Streak.getUniformStreak(this, streak, cell.state));
             }
         }
 
@@ -221,7 +243,8 @@ public class StreakBoard extends CXBoard {
             final List<CXCell> streak = getStreakFromDiagonal(cell, -1, -1);
 
             if (streak != null) {
-                streaks.add(Streak.getUniformStreak(streak, cell.state));
+                // streaks.add(Streak.getUniformStreak(streak, cell.state));
+                substituteOrAddStreak(streaks, Streak.getUniformStreak(this, streak, cell.state));
             }
         }
 
@@ -230,7 +253,8 @@ public class StreakBoard extends CXBoard {
             final List<CXCell> streak = getStreakFromDiagonal(cell, -1, +1);
 
             if (streak != null) {
-                streaks.add(Streak.getUniformStreak(streak, cell.state));
+                // streaks.add(Streak.getUniformStreak(streak, cell.state));
+                substituteOrAddStreak(streaks, Streak.getUniformStreak(this, streak, cell.state));
             }
         }
 
@@ -239,7 +263,8 @@ public class StreakBoard extends CXBoard {
             final List<CXCell> streak = getStreakFromDiagonal(cell, +1, -1);
 
             if (streak != null) {
-                streaks.add(Streak.getUniformStreak(streak, cell.state));
+                // streaks.add(Streak.getUniformStreak(streak, cell.state));
+                substituteOrAddStreak(streaks, Streak.getUniformStreak(this, streak, cell.state));
             }
         }
 
@@ -247,10 +272,12 @@ public class StreakBoard extends CXBoard {
         if (enoughBottomSpace && enoughRightSpace) {
             final List<CXCell> streak = getStreakFromDiagonal(cell, +1, +1);
             if (streak != null) {
-                streaks.add(Streak.getUniformStreak(streak, cell.state));
+                // streaks.add(Streak.getUniformStreak(streak, cell.state));
+                substituteOrAddStreak(streaks, Streak.getUniformStreak(this, streak, cell.state));
             }
         }
 
+        streaks.forEach(Streak::checkValidity);
         return streaks;
     }
 

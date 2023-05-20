@@ -1,10 +1,9 @@
 package connectx.L2;
 
-import connectx.CXBoard;
-import connectx.CXCellState;
-import connectx.CXGameState;
-import connectx.CXPlayer;
+import connectx.*;
+import connectx.extension.CellCoord;
 import connectx.extension.Pair;
+import connectx.extension.Streak;
 import connectx.extension.StreakBoard;
 
 import java.util.*;
@@ -17,7 +16,7 @@ public class L2 implements CXPlayer {
     private long timeoutTime;
     private long startTime;
 
-    private int currentPlayer;
+    private int l2Player;
 
     private final CXCellState[] Player = {CXCellState.P1, CXCellState.P2};
 
@@ -31,7 +30,7 @@ public class L2 implements CXPlayer {
         myWin   = first ? CXGameState.WINP1 : CXGameState.WINP2;
         yourWin = first ? CXGameState.WINP2 : CXGameState.WINP1;
 
-        currentPlayer = first ? 0 : 1;
+        l2Player = first ? 0 : 1;
         //player = first ? CXCellState.P1 : CXCellState.P2;
 
         timeoutTime = timeout_in_secs;
@@ -54,163 +53,328 @@ public class L2 implements CXPlayer {
         int save    = L[rand.nextInt(L.length)]; // Save a random column
 
         try {
-            int col = singleMoveWin(B,L);
+            // DEBUG: Check delle double wins con le streaks:
+            // Una streak dovrebbe essere valida, avere X-1 player cells
+            // e ci dovrebbero essere due tali streaks.
+
+            StreakBoard sb = (StreakBoard) B;
+            List<Streak> p1Streaks = sb.getStreaksP1();
+            List<Streak> p2Streaks = sb.getStreaksP2();
+
+
+            /*
+            {
+                int streaksCount = 0;
+                for (Streak streak : p1Streaks) {
+                    int count = 0;
+                    int multiplier = 0;
+                    if (!streak.isValid()) {
+                        continue;
+                    }
+                    for (CellCoord cell : streak.getCells()) {
+                        if (cell.getState() == streak.state) {
+                            count++;
+                        }
+                    }
+                    if (count == B.X - 1) {
+                        for (CellCoord cell : streak.getCells()) {
+                            if (cell.getState() == CXCellState.FREE) {
+                                // Check if a move can be made on here.
+                                if (cell.i == sb.M-1 ||
+                                    sb.getBoard()[cell.i+1][cell.j] != CXCellState.FREE) {
+
+                                    multiplier = 1;
+                                }
+                            }
+                        }
+                        streaksCount += multiplier;
+                    }
+                }
+                if (streaksCount >= 2) {
+                    System.out.println("There is a double attack for P1");
+                }
+            }
+            {
+                int streaksCount = 0;
+                for (Streak streak : p2Streaks) {
+                    int count = 0;
+                    int multiplier = 0;
+                    if (!streak.isValid()) {
+                        continue;
+                    }
+                    for (CellCoord cell : streak.getCells()) {
+                        if (cell.getState() == streak.state) {
+                            count++;
+                        }
+                    }
+                    if (count == B.X - 1) {
+                        for (CellCoord cell : streak.getCells()) {
+                            if (cell.getState() == CXCellState.FREE) {
+                                // Check if a move can be made on here.
+                                if (cell.i == sb.M-1 ||
+                                        sb.getBoard()[cell.i+1][cell.j] != CXCellState.FREE) {
+
+                                    multiplier = 1;
+                                }
+                            }
+                        }
+                        streaksCount += multiplier;
+                    }
+                }
+                if (streaksCount >= 2) {
+                    System.out.println("There is a double attack for P2");
+                }
+            }
+            */
+
+            if (checkDoubleAttack(sb, sb.getStreaksP1(), "P1")) {
+                System.out.println("There is double attack for P1");
+            }
+            if (checkDoubleAttack(sb, sb.getStreaksP2(), "P2")) {
+                System.out.println("There is double attack for P2");
+            }
+            if (checkDoubleAttack(sb, sb.getStreaksP2(), "P2")) {
+                System.out.println("There is double attack for P2");
+            }
+            if (Heuristics.heuristicNMoveWins(sb, sb.getStreaksP2(), 1)) {
+                System.out.println("P2 can win in 1 move");
+            }
+
+            int col = singleMoveWin(B,L, myWin);
             if(col != -1) {
+                System.out.println("Anticipated return (singleMoveWin)");
                 return col;
             }
 
-            col = singleMoveBlock(B,L);
+            // L = singleMoveBlock(B, L).toArray(Integer[]::new);
 
+            /*
             if (col != -1) {
+                System.out.println("Anticipated return (singleMoveBlock)");
                 return col;
-            }
+            }*/
 
-            int maxDepth = 6;
-            Pair<Integer, Integer> pair = minimax(
+            int maxDepth = 3;
+
+            int maxScore = Integer.MIN_VALUE;
+            int bestMove = -1;
+
+            int positionScore = minimax2(
                     (StreakBoard) B,
                     true,
                     Integer.MIN_VALUE,
                     Integer.MAX_VALUE,
-                    new int[maxDepth],
                     0,
                     maxDepth
-                    );
+            );
 
-            return pair.first;
+            for (Integer colMove : L) {
+                B.markColumn(colMove);
+                int score = minimax2(
+                        (StreakBoard) B,
+                        false,
+                        Integer.MIN_VALUE,
+                        Integer.MAX_VALUE,
+                        0,
+                        maxDepth
+                );
+                B.unmarkColumn();
+
+                // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
+                if (maxScore <= score) {
+                    maxScore = score;
+                    bestMove = colMove;
+                }
+            }
+
+            // System.out.println("Our score at this time: " + positionScore);
+            // System.out.println("Maximizing our score for this move: " + maxScore);
+            return bestMove;
         } catch (TimeoutException e) {
             System.err.println("Timeout!!! Random column selected");
             return save;
         }
     }
+    /*
 
-    private Pair<Integer, Integer> minimax(StreakBoard B, boolean isMax, int alpha, int beta, int[] bestScores, int depth, int depthMax) throws TimeoutException {
-        if (B.gameState() == CXGameState.DRAW) {
-            return new Pair<>(-1, 0);
-        }
-        if (B.gameState() == CXGameState.WINP1) {
-            if (isMax && myWin == CXGameState.WINP1) {
-                return new Pair<>(-1, Integer.MAX_VALUE);
+    private int signify(CXCellState winningPlayer, boolean maximizing) {
+        if (maximizing) {
+            if (winningPlayer == Player[l2Player]) {
+                return Integer.MAX_VALUE;
             } else {
-                return new Pair<>(-1, Integer.MIN_VALUE);
-            }
-        }
-        if (B.gameState() == CXGameState.WINP2) {
-            if (isMax && myWin == CXGameState.WINP2) {
-                return new Pair<>(-1, Integer.MAX_VALUE);
-            } else {
-                return new Pair<>(-1, Integer.MIN_VALUE);
-            }
-        }
-
-        int canWinSingleMove = singleMoveWin(B, B.getAvailableColumns());
-
-        if (canWinSingleMove != -1) {
-            int score = isMax ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-            return new Pair<>(canWinSingleMove, score);
-        }
-
-        if (depth == depthMax) {
-            // Valutazione euristica
-
-            int value = Euristics.score(B, Player[B.currentPlayer()], Player[B.currentPlayer()]);
-
-            if (isMax) {
-                alpha = value;
-                // bestScores[depth] = alpha;
-                return new Pair<>(null, alpha);
-            } else {
-                beta = value;
-                return new Pair<>(null, -beta);
+                return Integer.MIN_VALUE;
             }
         } else {
-
-            // Albero delle mosse
-            Integer[] L = B.getAvailableColumns();
-
-            List<Pair<Integer, Integer>> movesWithScores = new ArrayList<>();
-            for(int i : L) {
-                checktime(); // Check timeout at every iteration
-                CXGameState state = B.markColumn(i);
-
-                int connectivityScore = Euristics.estimateConnectivity(B, Player[currentPlayer]);
-
-                B.unmarkColumn();
-
-                movesWithScores.add(new Pair<>(i, connectivityScore));
-            }
-
-            // Reverse sort
-            movesWithScores.sort((a, b) -> b.second.compareTo(a.second));
-
-            List<Integer> bestMoves = movesWithScores
-                    .subList(0, Math.min(4, movesWithScores.size()))
-                    .stream()
-                    .map(pair -> pair.first)
-                    .toList();
-
-            List<Pair<Integer, Integer>> movesAndScoresFinal = new ArrayList<>();
-
-            for (int i : bestMoves) {
-                checktime(); // Check timeout at every iteration
-                try {
-                    B.markColumn(i);
-                } catch (Exception ex) {
-                    System.err.println("TRIED TO MARK UNAVAILABLE COLUMN " + i + ":");
-                    System.err.println("AVAILABLE COLUMNS:");
-                    System.err.println(List.of(B.getAvailableColumns()));
-                    System.err.println("L COLUMNS");
-                    System.err.println(List.of(L));
-                    System.err.println("STREAKBOARD MARK UNMARK COUNTS: " + StreakBoard.markCount + " " + StreakBoard.unmarkCount);
-                    // ex.printStackTrace();
-                    System.err.flush();
-                    throw ex;
-                }
-                Pair<Integer, Integer> pair = minimax(B, !isMax, alpha, beta, bestScores, depth+1, depthMax);
-                int value = pair.second;
-
-                B.unmarkColumn();
-
-                int score;
-                if (!isMax) {
-                    // Maximizing
-
-                    if (value >= beta) {
-                        value = beta;
-
-                        score = beta;
-                    } else if (value > alpha) {
-                        alpha = value;
-                        //return alpha;
-                        score = alpha;
-                    } else {
-                        score = value;
-                    }
-                } else {
-                    // Minimizing
-
-                    if (value <= alpha) {
-                        score = alpha;
-                    } else if (value < beta) {
-                        score = beta;
-                    } else {
-                        score = value;
-                    }
-                }
-                movesAndScoresFinal.add(new Pair<>(i, score));
-            }
-
-            if (isMax) {
-                // Reverse sort, we want highest element.
-                movesAndScoresFinal.sort((a, b) -> b.second.compareTo(a.second));
+            if (winningPlayer == Player[l2Player]) {
+                return Integer.MIN_VALUE;
             } else {
-                // Normal sort, we want lowest element.
-                movesAndScoresFinal.sort(Comparator.comparing(a -> a.second));
+                return Integer.MAX_VALUE;
             }
-
-            return movesAndScoresFinal.get(0);
         }
     }
 
+    private int signify(CXGameState winningPlayer, boolean maximizing) {
+        if (winningPlayer == CXGameState.DRAW) {
+            return 0;
+        }
+        if (maximizing) {
+            if (winningPlayer == myWin) {
+                return Integer.MAX_VALUE;
+            } else {
+                return Integer.MIN_VALUE;
+            }
+        } else {
+            if (winningPlayer == myWin) {
+                return Integer.MIN_VALUE;
+            } else {
+                return Integer.MAX_VALUE;
+            }
+        }
+    }*/
+
+    private int minimax2(
+            StreakBoard B,
+            boolean maximizing,
+            int alpha,
+            int beta,
+            int depth,
+            int depthMax
+    ) throws TimeoutException {
+        final CXGameState localMySide;
+        final CXGameState localOpponentSide;
+        final CXCellState localPlayer;
+
+        localPlayer = Player[B.currentPlayer()];
+        localMySide = localPlayer == CXCellState.P1 ? CXGameState.WINP1 : CXGameState.WINP2;
+
+        localOpponentSide = localPlayer == CXCellState.P1 ? CXGameState.WINP2 : CXGameState.WINP1;
+        //localOpponentSide = Player[1-B.currentPlayer()];
+
+        /*if (maximizing) {
+            localMySide = myWin;
+            localOpponentSide = yourWin;
+            localPlayer = Player[l2Player];
+        } else {
+            localPlayer = Player[1-l2Player];
+            localMySide = yourWin;
+            localOpponentSide = myWin;
+        }*/
+
+        if (B.gameState() == CXGameState.DRAW) {
+            return 0;
+        }
+        // If game is finished, stop here
+        if (B.gameState() != CXGameState.OPEN) {
+            // return signify(B.gameState(), maximizing);
+            if (maximizing) {
+                if (B.gameState() == localMySide) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return Integer.MIN_VALUE;
+                }
+            } else {
+                if (B.gameState() == localMySide) {
+                    return Integer.MIN_VALUE;
+                } else {
+                    return Integer.MAX_VALUE;
+                }
+            }
+        }
+
+        if (depth == depthMax) {
+            // Euristica
+            int sign = maximizing ? +1 : -1;
+            return sign * Heuristics.score(B, localPlayer, Player[B.currentPlayer()]);
+        }
+
+        int canWinSingleMove = singleMoveWin(B, B.getAvailableColumns(), localMySide);
+
+        if (canWinSingleMove != -1) {
+            // System.out.println("MAXIMIZING HERE!!!!");
+            if (maximizing) {
+                return Integer.MAX_VALUE;
+            } else {
+                return Integer.MIN_VALUE;
+            }
+            /*
+            if (Player[B.currentPlayer()] == localPlayer) {
+                if (maximizing) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return Integer.MIN_VALUE;
+                }
+            } else {
+                if (maximizing) {
+                    return Integer.MIN_VALUE;
+                } else {
+                    return Integer.MAX_VALUE;
+                }
+            }*/
+        }
+
+        List<Pair<Integer, Integer>> movesWithScores = new ArrayList<>();
+
+        Integer[] L = B.getAvailableColumns();
+
+        int value;
+        if (maximizing) {
+            value = Integer.MIN_VALUE;
+        } else {
+            value = Integer.MAX_VALUE;
+        }
+        //List<Integer> bestMoves = Arrays.asList(L);
+
+        // Potatura
+        for(int i : L) {
+            checktime(); // Check timeout at every iteration
+            CXGameState state = B.markColumn(i);
+
+            // If we win straight-away, we pick that
+            if (state == localMySide) {
+                if (maximizing) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return Integer.MIN_VALUE;
+                }
+            }
+
+            int connectivityScore = Heuristics.estimateConnectivity(B, Player[B.currentPlayer()]);
+            movesWithScores.add(new Pair<>(i, connectivityScore));
+
+            B.unmarkColumn();
+        }
+
+        movesWithScores.sort((a, b) -> b.second.compareTo(a.second));
+        List<Integer> bestMoves = new ArrayList<>(movesWithScores
+                .subList(0, Math.min(4, movesWithScores.size()))
+                .stream()
+                .map(pair -> pair.first)
+                .toList());
+
+        if (maximizing) {
+            for (int i : L) {
+                B.markColumn(i);
+                value = Math.max(value, minimax2(B, false, alpha, beta, depth+1, depthMax));
+                B.unmarkColumn();
+                if (value > beta) {
+                    return beta; // Beta-cutoff
+                }
+                alpha = Math.max(alpha, value);
+            }
+        } else {
+            for (int i : L) {
+                B.markColumn(i);
+                value = Math.min(value, minimax2(B, true, alpha, beta, depth+1, depthMax));
+                B.unmarkColumn();
+
+                if (value < alpha) {
+                    return alpha; // Alpha-cutoff
+                }
+                beta = Math.min(beta, value);
+            }
+        }
+        return value;
+    }
     private void checktime() throws TimeoutException {
         if ((System.currentTimeMillis() - startTime) / 1000.0 >= timeoutTime * (99.0 / 100.0))
             throw new TimeoutException();
@@ -221,19 +385,110 @@ public class L2 implements CXPlayer {
      *
      * Returns the winning column if there is one, otherwise -1
      */
-    private int singleMoveWin(CXBoard B, Integer[] L) throws TimeoutException {
+    private int singleMoveWin(CXBoard B, Integer[] L, CXGameState winningSide) throws TimeoutException {
         for(int i : L) {
             checktime(); // Check timeout at every iteration
             CXGameState state = B.markColumn(i);
-            if (state == myWin)
-                return i; // Winning column found: return immediately
             B.unmarkColumn();
+
+            if (state == winningSide) {
+                return i; // Winning column found: return immediately
+            }
         }
         return -1;
     }
 
-    private boolean isThereDoubleAttack(CXBoard B, Integer[] L) throws TimeoutException {
-        if (B.currentPlayer() == currentPlayer) {
+
+    private boolean checkDoubleAttack(StreakBoard sb,
+                                       List<Streak> playerStreaks,
+                                       String playerName) {
+
+        int streaksCount = 0;
+        for (Streak streak : playerStreaks) {
+            int count = 0;
+            int multiplier = 0;
+            if (!streak.isValid()) {
+                continue;
+            }
+            for (CellCoord cell : streak.getCells()) {
+                if (cell.getState() == streak.state) {
+                    count++;
+                }
+            }
+            if (count == sb.X) {
+                System.out.println("PLAYER " + playerName + " HAS WON");
+            }
+            if (count == sb.X - 1) {
+                for (CellCoord cell : streak.getCells()) {
+                    if (cell.getState() == CXCellState.FREE) {
+                        // Check if a move can be made on here.
+                        if (cell.i == sb.M-1 ||
+                                sb.getBoard()[cell.i+1][cell.j] != CXCellState.FREE) {
+
+                            multiplier = 1;
+                        }
+                    }
+                }
+                streaksCount += multiplier;
+            }
+        }
+        // System.out.println("There is a double attack for P2");
+        return streaksCount >= 2;
+    }
+    private boolean isThereDoubleAttack(CXBoard B, Integer[] L, CXGameState winningSide) throws TimeoutException {
+        int doSingleMoveWin = singleMoveWin(B, L, winningSide);
+
+        // Caso A
+        if (doSingleMoveWin != -1) {
+            return true;
+        }
+
+        // Caso B; c'è almeno una mossa tale che, per **qualsiasi** mossa dell'avversario, noi vinciamo
+        // alla mossa successiva
+
+        int count;
+
+        for (Integer col : L) {
+            B.markColumn(col);
+
+            if (B.gameState() != CXGameState.OPEN) {
+                B.unmarkColumn();
+                continue;
+
+                // Skip
+            }
+
+            count = 0;
+            for (Integer col2 : B.getAvailableColumns()) {
+                CXGameState state = B.markColumn(col2);
+
+                if (state == yourWin) {
+                    // Interrompiamo prima se c'è una vittoria per l'avversario
+                    B.unmarkColumn();
+                    break;
+                }
+
+                if (B.gameState() != CXGameState.OPEN) {
+                    B.unmarkColumn();
+                    continue;
+                }
+
+                if (singleMoveWin(B, B.getAvailableColumns(), winningSide) != -1) {
+                    count++;
+                }
+
+                B.unmarkColumn();
+            }
+            B.unmarkColumn();
+
+            if (count == L.length) {
+                // Almeno un match trovato in cui c'è un doppio attacco.
+                return true;
+            }
+        }
+        return false;
+
+       /* if (B.currentPlayer() == currentPlayer) {
             return singleMoveWin(B, L) != -1;
         } else {
 
@@ -245,6 +500,7 @@ public class L2 implements CXPlayer {
 
                 if (state == yourWin) {
                     // Interrompiamo prima se c'è una vittoria per l'avversario
+                    B.unmarkColumn();
                     return false;
                 }
                 boolean winFound = false;
@@ -268,22 +524,25 @@ public class L2 implements CXPlayer {
             }
 
             return matches == L.length;
-        }
-
+        }*/
     }
 
     /**
      * Check if we can block adversary's victory
      *
-     * Returns a blocking column if there is one, otherwise -1
+     * Returns a list of columns that don't allow opponent's victory right-away
+     * (unless opponent has double attack)
      */
-    private int singleMoveBlock(CXBoard B, Integer[] L) throws TimeoutException {
-        TreeSet<Integer> T = new TreeSet<Integer>(); // We collect here safe column indexes
+    private int singleMoveBlock(CXBoard B, Integer[] L, CXGameState opponentSide) throws TimeoutException {
+
+        boolean isThereSingleMoveBlock = false;
+
+        TreeSet<Integer> T = new TreeSet<>(); // We collect here safe column indexes
 
         for(int i : L) {
             checktime();
             T.add(i); // We consider column i as a possible move
-            B.markColumn(i);
+            B.markColumn(i); // Our move
 
             int j;
             boolean stop;
@@ -292,8 +551,8 @@ public class L2 implements CXPlayer {
                 //try {Thread.sleep((int)(0.2*1000*TIMEOUT));} catch (Exception e) {} // Uncomment to test timeout
                 checktime();
                 if(!B.fullColumn(L[j])) {
-                    CXGameState state = B.markColumn(L[j]);
-                    if (state == yourWin) {
+                    CXGameState state = B.markColumn(L[j]); // Opponent move.
+                    if (state == opponentSide) {
                         T.remove(i); // We ignore the i-th column as a possible move
                         stop = true; // We don't need to check more
                     }
@@ -304,11 +563,10 @@ public class L2 implements CXPlayer {
         }
 
         if (T.size() > 0) {
-            // Integer[] X = T.toArray(new Integer[T.size()]);
-            Integer[] X = T.toArray(new Integer[0]);
+            Integer[] X = T.toArray(new Integer[T.size()]);
             return X[rand.nextInt(X.length)];
         } else {
-            return -1; // L[rand.nextInt(L.length)];
+            return L[rand.nextInt(L.length)];
         }
     }
 

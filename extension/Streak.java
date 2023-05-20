@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class Streak {
-    List<CXCell> cells;
+    List<CellCoord> cells;
 
-    public List<CXCell> getCells() {
+    @Override
+    public String toString() {
+        return "Streak(state = " + state + ", valid = " + valid + ", cells = \n" + cells.toString() + ")\n";
+    }
+    public List<CellCoord> getCells() {
         return cells;
     }
 
@@ -40,8 +44,8 @@ public class Streak {
 
     public void checkValidity() {
         // Prima cerchiamo se c'è un avversario in questa streak
-        for (CXCell cell : cells) {
-            if (cell.state == getOpponentState()) {
+        for (CellCoord cell : cells) {
+            if (cell.getState() == getOpponentState()) {
                 this.valid = false;
                 return;
             }
@@ -49,18 +53,22 @@ public class Streak {
 
         boolean valid = false;
 
+        int count = 0;
+
         // Ora controlliamo che non sia vuota (nel qual caso, sarebbe invalida)
-        for (CXCell cell : cells) {
-            if (cell.state == this.state) {
-                valid = true;
-                break;
+        for (CellCoord cell : cells) {
+            if (cell.getState() == this.state) {
+
+                count++;
+                valid = count >= 1;
+
             }
         }
 
         this.valid = valid;
     }
 
-    public Streak(CXCellState state, int rowStart, int colStart, int rowEnd, int colEnd, List<CXCell> cells) {
+    public Streak(StreakBoard board, CXCellState state, int rowStart, int colStart, int rowEnd, int colEnd, List<CXCell> cells) {
         this.state = state;
         this.rowStart = rowStart;
         this.colStart = colStart;
@@ -68,7 +76,7 @@ public class Streak {
         this.colEnd = colEnd;
 
         this.cells = new ArrayList<>(cells.size());
-        this.cells.addAll(cells);
+        this.cells.addAll(cells.stream().map(cxCell -> new CellCoord(board, cxCell.i, cxCell.j)).toList());
 
         this.checkValidity();
     }
@@ -97,7 +105,7 @@ public class Streak {
      * @param streak
      * @return
      */
-    public static Streak getUniformStreak(List<CXCell> streak, CXCellState state) {
+    public static Streak getUniformStreak(StreakBoard board, List<CXCell> streak, CXCellState state) {
         List<CXCell> listCopy = new ArrayList<>(streak);
 
         final int SWAP = 1;
@@ -133,7 +141,7 @@ public class Streak {
         CXCell first = listCopy.get(0);
         CXCell last = listCopy.get(listCopy.size()-1);
 
-        return new Streak(state, first.i, first.j, last.i, last.j, listCopy);
+        return new Streak(board, state, first.i, first.j, last.i, last.j, listCopy);
 
         /*
         Collections.sort(listCopy, (o1, o2) -> {
@@ -163,7 +171,7 @@ public class Streak {
 
     // Given three collinear points p, q, r, the function checks if
 // point q lies on line segment 'pr'
-    static boolean onSegment(CXCell p, CXCell q, CXCell r)
+    static boolean onSegment(CellCoord p, CellCoord q, CellCoord r)
     {
         if (q.j <= Math.max(p.j, r.j) && q.j >= Math.min(p.j, r.j) &&
                 q.i <= Math.max(p.i, r.i) && q.i >= Math.min(p.i, r.i))
@@ -177,7 +185,7 @@ public class Streak {
 // 0 --> p, q and r are collinear
 // 1 --> Clockwise
 // 2 --> Counterclockwise
-    static int orientation(CXCell p, CXCell q, CXCell r)
+    static int orientation(CellCoord p, CellCoord q, CellCoord r)
     {
         // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
         // for details of below formula.
@@ -209,7 +217,7 @@ public class Streak {
     }
     // The main function that returns true if line segment 'p1q1'
 // and 'p2q2' intersect.
-    static boolean doIntersect(CXCell p1, CXCell q1, CXCell p2, CXCell q2)
+    static boolean doIntersect(CellCoord p1, CellCoord q1, CellCoord p2, CellCoord q2)
     {
         // Find the four orientations needed for general and
         // special cases

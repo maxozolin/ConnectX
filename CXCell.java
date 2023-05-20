@@ -54,6 +54,10 @@ public class CXCell {
 	}
 
 	@Override
+	public String toString() {
+		return "Cell(i =" + i + ", j =" + j + ", state = " + state + ")";
+	}
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof CXCell)) {
 			return false;
