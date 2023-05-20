@@ -103,7 +103,7 @@ public class CriticalMoves {
   /*
    * Double Block
    */
-  private boolean checkDoubleAttack(StreakBoard sb,
+  public static boolean checkDoubleAttack(StreakBoard sb,
       List<Streak> playerStreaks,
       String playerName) {
 
@@ -140,7 +140,7 @@ public class CriticalMoves {
     return streaksCount >= 2;
   }
 
-  private boolean isThereDoubleAttack(CXBoard B, Integer[] L, CXGameState winningSide, CXGameState yourWin) throws TimeoutException {
+  public static boolean isThereDoubleAttack_v1(CXBoard B, Integer[] L, CXGameState winningSide, CXGameState yourWin) throws TimeoutException {
     int doSingleMoveWin = singleMoveWin(B, L, winningSide);
 
     // Caso A
@@ -193,46 +193,6 @@ public class CriticalMoves {
       }
     }
     return false;
-
-    /*
-     * if (B.currentPlayer() == currentPlayer) {
-     * return singleMoveWin(B, L) != -1;
-     * } else {
-     * 
-     * int matches = 0;
-     * 
-     * for (int i : L) {
-     * checktime(); // Check timeout at every iteration
-     * CXGameState state = B.markColumn(i);
-     * 
-     * if (state == yourWin) {
-     * // Interrompiamo prima se c'è una vittoria per l'avversario
-     * B.unmarkColumn();
-     * return false;
-     * }
-     * boolean winFound = false;
-     * Integer[] L2 = B.getAvailableColumns();
-     * for (int j : L2) {
-     * checktime(); // Check timeout at every iteration
-     * B.markColumn(j);
-     * if (state == myWin) {
-     * winFound = true;
-     * break;
-     * }
-     * B.unmarkColumn();
-     * }
-     * B.unmarkColumn();
-     * 
-     * if (winFound) {
-     * matches += 1;
-     * // Abbiamo bisogno di trovare la vittoria L.length volte per essere
-     * // certi di un doppio attacco
-     * }
-     * }
-     * 
-     * return matches == L.length;
-     * }
-     */
   }
 
 }

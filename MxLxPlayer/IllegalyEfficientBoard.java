@@ -79,6 +79,23 @@ public class IllegalyEfficientBoard {
     };
   }
 
+  // Makes the position open so that you can still play a move even if game ended for a player
+  public static void openPosition(CXBoard b) {
+    try {
+      Class<?> cls = Class.forName("connectx.CXBoard");
+      Field gameStateField = cls.getDeclaredField("gameState");
+      gameStateField.setAccessible(true);
+
+      CXGameState currentGameState = (CXGameState) gameStateField.get(b);
+      currentGameState = CXGameState.OPEN;
+
+      gameStateField.set(b, currentGameState);
+    } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+      System.err.println("Could not Illegaly swap :(");
+      System.err.println(e);
+    }
+  }
+
   public static void swapCurrentPlayer(CXBoard b) {
     try {
       /* TODO

@@ -1,8 +1,8 @@
-K?=6
-M?=7
-N?=4 # Number of things to connnect
-CPU_1?=connectx.L1.L1 
-CPU_2?=connectx.L2.L2
+K?=4
+M?=6
+N?=7 
+CPU_1?=connectx.L1.L1
+CPU_2?=connectx.MxLxPlayer.MxLxPlayer
 R?=3 # Number of rounds when testing automatically
 V?=0 # Verbose test output
 
