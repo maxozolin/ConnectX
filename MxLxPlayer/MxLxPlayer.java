@@ -68,9 +68,7 @@ public class MxLxPlayer implements CXPlayer {
       return col;
     }
 
-    if(timeKeeper.ranOutOfTime()){
-      return save;
-    }
+    if(timeKeeper.ranOutOfTime()) return save;
 
     col = CriticalMoves.singleMoveBlock(B, L, yourWin);
     if (col != -1) {
@@ -78,22 +76,16 @@ public class MxLxPlayer implements CXPlayer {
       return col;
     }
 
-    if(timeKeeper.ranOutOfTime()){
-      return save;
-    }
+    if(timeKeeper.ranOutOfTime()) return save;
+    
 
     Integer[] L_not_stupid = CriticalMoves.notOpponentWinsNext(L, B, yourWin);
     if(L_not_stupid.length > 0){
       save = L_not_stupid[rand.nextInt(L_not_stupid.length)]; // Save a random column that is not stupid
     }
 
-    try {
-      timeKeeper.checktime();
-      return save;
-    } catch (TimeoutException e) {
-      System.err.println("Timeout!!! Random column selected");
-      return save;
-    }
+    if(timeKeeper.ranOutOfTime()) return save;
+    return save;
   }
 
 
