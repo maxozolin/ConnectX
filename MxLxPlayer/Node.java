@@ -19,7 +19,7 @@ public class Node {
       children = new ArrayList<Node>();
     }
 
-    public boolean is_leaf(){
+    public boolean isLeaf(){
       return children.size() == 0;
     }
 }
