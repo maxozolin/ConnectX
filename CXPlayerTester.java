@@ -157,6 +157,8 @@ public class CXPlayerTester {
 				System.err.println(
 						"Player " + (curr + 1) + " (" + Player[curr].playerName() + ") interrupted due to exception");
 				System.err.println(" " + ex);
+				ex.printStackTrace();
+				System.err.flush();
 				while (!task.isDone() && n > 0) {
 					System.err.println("Waiting for " + Player[curr].playerName() + " to stop ... (" + n + ")");
 					try {

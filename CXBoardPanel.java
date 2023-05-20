@@ -681,6 +681,8 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 				} catch (Exception ex) {
 					System.err.println("Error: " + ComPlayer[curr].playerName() + " interrupted due to exception");
 					System.err.println(" " + ex);
+					// ex.printStackTrace();
+					// System.err.flush();
 					System.exit(1);
 				}
 				if (!executor.isTerminated())

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Attacher">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/LH/attacher/Attacher.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
