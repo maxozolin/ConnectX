@@ -14,20 +14,8 @@ public class Heuristics {
         int c1 = estimateConnectivity(board, CXCellState.P1);
         int c2 = estimateConnectivity(board, CXCellState.P2);
 
-        return Math.abs(c1-c2) < 20;
+        return Math.abs(c1-c2) < 40;
     }
-/*
-    public static int estimateDominance(StreakBoard board, CXCellState player) {
-        CXCellState opponent;
-
-        if (player == CXCellState.P1) {
-            opponent = CXCellState.P2;
-        } else {
-            opponent = CXCellState.P1;
-        }
-
-        return -estimateConnectivity(board, opponent);
-    }*/
 
     public static int score(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
         final List<Streak> myStreaks;
@@ -71,72 +59,8 @@ public class Heuristics {
     }
 
 
-    static int count = 0;
-    public static int score2(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
-        CXCellState opponent;
-        if (player == CXCellState.P1) {
-            opponent = CXCellState.P2;
-        } else {
-            opponent = CXCellState.P1;
-        }
-        long scoreA = (long)estimateConnectivity(board, player); // - estimateConnectivity(board, opponent); // (int) ((float) estimateConnectivity(board, opponent) * 0.5f);
-        long scoreB = (long)-estimateConnectivity(board, opponent);
-        // TODO: Remove after debug phase is finished
-        if(count > 1000 && count < 1010) {
-            System.out.println("[DEBUG] connectivity player " + player.toString() + ": " + estimateConnectivity(board, player));
-        }
-        count++;
-
-        if (playingPlayer == player) {
-
-            final List<Streak> streaksOpponent;
-            if (playingPlayer == CXCellState.P1) {
-
-                if (checkDoubleAttack(board, board.getStreaksP1())) {
-                    return 200000000;
-                }
-                if (heuristicNMoveWins(board, board.getStreaksP1(), 1)) {
-                    return 100000000;
-                }
-                streaksOpponent = board.getStreaksP2();
-            } else {
-                if (checkDoubleAttack(board, board.getStreaksP2())) {
-                    return 200000000;
-                }
-                if (heuristicNMoveWins(board, board.getStreaksP2(), 1)) {
-                    return 100000000;
-                }
-                streaksOpponent = board.getStreaksP1();
-            }
-
-            if (checkDoubleAttack(board, streaksOpponent)) {
-                // OPPONENT HAS DOUBLE ATTACK
-                return -200000000;
-            }
-        } else {
-            final List<Streak> streaks;
-            if (playingPlayer == CXCellState.P1) {
-
-                if (heuristicNMoveWins(board, board.getStreaksP2(), 1)) {
-                    return -100000000;
-                }
-                streaks = board.getStreaksP2();
-            } else {
-                if (heuristicNMoveWins(board, board.getStreaksP1(), 1)) {
-                    return -100000000;
-                }
-                streaks = board.getStreaksP1();
-            }
-
-            if (checkDoubleAttack(board, streaks)) {
-                // WE HAVE DOUBLE ATTACK
-                return 200000000;
-            }
-
-        }
-
-        return (int) (scoreA + scoreB);
-    }
+    // Scopi di debugging
+    // static int count = 0;
 
     public static boolean heuristicNMoveWins(StreakBoard sb,
                                               List<Streak> playerStreaks,
@@ -177,11 +101,22 @@ public class Heuristics {
         return heuristicNMoveWins(sb, playerStreaks, 2);
     }
 
+    /**
+     * Questo metodo elabora un punteggio legato alla connettività in una posizione per un
+     * determinato giocatore.
+     *
+     * Tanto più il punteggio è alto, più è considerata 'buona' in termini di connettività,
+     * la posizione di questo giocatore.
+     *
+     * Questo metodo NON tiene conto della connettività dell'avversario nella stessa posizione.
+     *
+     * @param board scacchiera
+     * @param player giocatore di cui calcolare la connettività
+     *
+     * @return euristica di connettività, da comparare con altre
+     * posizioni possibili oppure con l'avversario nella stessa posizione.
+     */
     public static int estimateConnectivity(StreakBoard board, CXCellState player) {
-        // Euristica:
-        // +1 per ogni streak valida
-        // +5 per ogni pedina in una streak
-        // Se due scie hanno intersezione, il loro valore vale doppio
 
         List<Streak> streaks;
 

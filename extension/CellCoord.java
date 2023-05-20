@@ -2,6 +2,12 @@ package connectx.extension;
 
 import connectx.CXCellState;
 
+/**
+ * Sarebbe un CellPointer in altri termini. Utilizzato per riferirsi alle coordinate di una cella
+ * della scacchiera, ma il valore della cella verrà richiesto al momento alla scacchiera,
+ * quindi questi oggetti non hanno valore necessariamente costante nel tempo, però altresì
+ * non richiedono aggiornamenti manuali o di essere ri-creati.
+ */
 public class CellCoord {
     private final StreakBoard board;
 

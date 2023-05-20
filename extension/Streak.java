@@ -142,31 +142,6 @@ public class Streak {
         CXCell last = listCopy.get(listCopy.size()-1);
 
         return new Streak(board, state, first.i, first.j, last.i, last.j, listCopy);
-
-        /*
-        Collections.sort(listCopy, (o1, o2) -> {
-            return -1;
-        });*/
-        /*
-        int minRow = Integer.MAX_VALUE, maxRow = -1, minCol = Integer.MAX_VALUE, maxCol = -1;
-
-        for (CXCell cell : streak) {
-            if (minRow >= cell.i) {
-                minRow = cell.i;
-
-                if (minCol >= cell.j) {
-                    minCol = cell.j;
-                }
-            }
-
-            if (maxRow <= cell.i) {
-                maxRow = cell.i;
-
-                if (maxCol <= cell.j) {
-                    maxCol = cell.j;
-                }
-            }
-        }*/
     }
 
     // Given three collinear points p, q, r, the function checks if
@@ -181,10 +156,10 @@ public class Streak {
     }
 
     // To find orientation of ordered triplet (p, q, r).
-// The function returns following values
-// 0 --> p, q and r are collinear
-// 1 --> Clockwise
-// 2 --> Counterclockwise
+    // The function returns following values
+    // 0 --> p, q and r are collinear
+    // 1 --> Clockwise
+    // 2 --> Counterclockwise
     static int orientation(CellCoord p, CellCoord q, CellCoord r)
     {
         // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
@@ -216,7 +191,7 @@ public class Streak {
         );
     }
     // The main function that returns true if line segment 'p1q1'
-// and 'p2q2' intersect.
+    // and 'p2q2' intersect.
     static boolean doIntersect(CellCoord p1, CellCoord q1, CellCoord p2, CellCoord q2)
     {
         // Find the four orientations needed for general and

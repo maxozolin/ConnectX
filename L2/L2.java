@@ -57,92 +57,30 @@ public class L2 implements CXPlayer {
             // Una streak dovrebbe essere valida, avere X-1 player cells
             // e ci dovrebbero essere due tali streaks.
 
+            /*
+            // Print utili per il debug.
+
             StreakBoard sb = (StreakBoard) B;
             List<Streak> p1Streaks = sb.getStreaksP1();
             List<Streak> p2Streaks = sb.getStreaksP2();
 
-
-            /*
-            {
-                int streaksCount = 0;
-                for (Streak streak : p1Streaks) {
-                    int count = 0;
-                    int multiplier = 0;
-                    if (!streak.isValid()) {
-                        continue;
-                    }
-                    for (CellCoord cell : streak.getCells()) {
-                        if (cell.getState() == streak.state) {
-                            count++;
-                        }
-                    }
-                    if (count == B.X - 1) {
-                        for (CellCoord cell : streak.getCells()) {
-                            if (cell.getState() == CXCellState.FREE) {
-                                // Check if a move can be made on here.
-                                if (cell.i == sb.M-1 ||
-                                    sb.getBoard()[cell.i+1][cell.j] != CXCellState.FREE) {
-
-                                    multiplier = 1;
-                                }
-                            }
-                        }
-                        streaksCount += multiplier;
-                    }
-                }
-                if (streaksCount >= 2) {
-                    System.out.println("There is a double attack for P1");
-                }
+            if (checkDoubleAttack(sb, sb.getStreaksP1(), "P1")) {
+                System.out.println("[DEBUG] There is double attack for P1");
             }
-            {
-                int streaksCount = 0;
-                for (Streak streak : p2Streaks) {
-                    int count = 0;
-                    int multiplier = 0;
-                    if (!streak.isValid()) {
-                        continue;
-                    }
-                    for (CellCoord cell : streak.getCells()) {
-                        if (cell.getState() == streak.state) {
-                            count++;
-                        }
-                    }
-                    if (count == B.X - 1) {
-                        for (CellCoord cell : streak.getCells()) {
-                            if (cell.getState() == CXCellState.FREE) {
-                                // Check if a move can be made on here.
-                                if (cell.i == sb.M-1 ||
-                                        sb.getBoard()[cell.i+1][cell.j] != CXCellState.FREE) {
-
-                                    multiplier = 1;
-                                }
-                            }
-                        }
-                        streaksCount += multiplier;
-                    }
-                }
-                if (streaksCount >= 2) {
-                    System.out.println("There is a double attack for P2");
-                }
+            if (checkDoubleAttack(sb, sb.getStreaksP2(), "P2")) {
+                System.out.println("[DEBUG] There is double attack for P2");
+            }
+            if (checkDoubleAttack(sb, sb.getStreaksP2(), "P2")) {
+                System.out.println("[DEBUG] There is double attack for P2");
+            }
+            if (Heuristics.heuristicNMoveWins(sb, sb.getStreaksP2(), 1)) {
+                System.out.println("[DEBUG] P2 can win in 1 move");
             }
             */
 
-            if (checkDoubleAttack(sb, sb.getStreaksP1(), "P1")) {
-                System.out.println("There is double attack for P1");
-            }
-            if (checkDoubleAttack(sb, sb.getStreaksP2(), "P2")) {
-                System.out.println("There is double attack for P2");
-            }
-            if (checkDoubleAttack(sb, sb.getStreaksP2(), "P2")) {
-                System.out.println("There is double attack for P2");
-            }
-            if (Heuristics.heuristicNMoveWins(sb, sb.getStreaksP2(), 1)) {
-                System.out.println("P2 can win in 1 move");
-            }
-
             int col = singleMoveWin(B,L, myWin);
             if(col != -1) {
-                System.out.println("Anticipated return (singleMoveWin)");
+                // System.out.println("[DEBUG] Anticipated return (singleMoveWin)");
                 return col;
             }
 
@@ -159,6 +97,8 @@ public class L2 implements CXPlayer {
             int maxScore = Integer.MIN_VALUE;
             int bestMove = -1;
 
+            /*
+            // Utile per il debug
             int positionScore = minimax2(
                     (StreakBoard) B,
                     true,
@@ -166,7 +106,7 @@ public class L2 implements CXPlayer {
                     Integer.MAX_VALUE,
                     0,
                     maxDepth
-            );
+            );*/
 
             for (Integer colMove : L) {
                 B.markColumn(colMove);
@@ -180,57 +120,21 @@ public class L2 implements CXPlayer {
                 );
                 B.unmarkColumn();
 
-                // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
+                // System.out.println("[DEBUG] MOVE AT COL " + colMove + " | SCORE: " + score);
                 if (maxScore <= score) {
                     maxScore = score;
                     bestMove = colMove;
                 }
             }
 
-            // System.out.println("Our score at this time: " + positionScore);
-            // System.out.println("Maximizing our score for this move: " + maxScore);
+            // System.out.println("[DEBUG] Our score at this time: " + positionScore);
+            // System.out.println("[DEBUG] Maximizing our score for this move: " + maxScore);
             return bestMove;
         } catch (TimeoutException e) {
             System.err.println("Timeout!!! Random column selected");
             return save;
         }
     }
-    /*
-
-    private int signify(CXCellState winningPlayer, boolean maximizing) {
-        if (maximizing) {
-            if (winningPlayer == Player[l2Player]) {
-                return Integer.MAX_VALUE;
-            } else {
-                return Integer.MIN_VALUE;
-            }
-        } else {
-            if (winningPlayer == Player[l2Player]) {
-                return Integer.MIN_VALUE;
-            } else {
-                return Integer.MAX_VALUE;
-            }
-        }
-    }
-
-    private int signify(CXGameState winningPlayer, boolean maximizing) {
-        if (winningPlayer == CXGameState.DRAW) {
-            return 0;
-        }
-        if (maximizing) {
-            if (winningPlayer == myWin) {
-                return Integer.MAX_VALUE;
-            } else {
-                return Integer.MIN_VALUE;
-            }
-        } else {
-            if (winningPlayer == myWin) {
-                return Integer.MIN_VALUE;
-            } else {
-                return Integer.MAX_VALUE;
-            }
-        }
-    }*/
 
     private int minimax2(
             StreakBoard B,
@@ -241,31 +145,19 @@ public class L2 implements CXPlayer {
             int depthMax
     ) throws TimeoutException {
         final CXGameState localMySide;
-        final CXGameState localOpponentSide;
+        // final CXGameState localOpponentSide;
         final CXCellState localPlayer;
 
         localPlayer = Player[B.currentPlayer()];
         localMySide = localPlayer == CXCellState.P1 ? CXGameState.WINP1 : CXGameState.WINP2;
 
-        localOpponentSide = localPlayer == CXCellState.P1 ? CXGameState.WINP2 : CXGameState.WINP1;
-        //localOpponentSide = Player[1-B.currentPlayer()];
-
-        /*if (maximizing) {
-            localMySide = myWin;
-            localOpponentSide = yourWin;
-            localPlayer = Player[l2Player];
-        } else {
-            localPlayer = Player[1-l2Player];
-            localMySide = yourWin;
-            localOpponentSide = myWin;
-        }*/
+        // localOpponentSide = localPlayer == CXCellState.P1 ? CXGameState.WINP2 : CXGameState.WINP1;
 
         if (B.gameState() == CXGameState.DRAW) {
             return 0;
         }
         // If game is finished, stop here
         if (B.gameState() != CXGameState.OPEN) {
-            // return signify(B.gameState(), maximizing);
             if (maximizing) {
                 if (B.gameState() == localMySide) {
                     return Integer.MAX_VALUE;
@@ -290,29 +182,14 @@ public class L2 implements CXPlayer {
         int canWinSingleMove = singleMoveWin(B, B.getAvailableColumns(), localMySide);
 
         if (canWinSingleMove != -1) {
-            // System.out.println("MAXIMIZING HERE!!!!");
             if (maximizing) {
                 return Integer.MAX_VALUE;
             } else {
                 return Integer.MIN_VALUE;
             }
-            /*
-            if (Player[B.currentPlayer()] == localPlayer) {
-                if (maximizing) {
-                    return Integer.MAX_VALUE;
-                } else {
-                    return Integer.MIN_VALUE;
-                }
-            } else {
-                if (maximizing) {
-                    return Integer.MIN_VALUE;
-                } else {
-                    return Integer.MAX_VALUE;
-                }
-            }*/
         }
 
-        List<Pair<Integer, Integer>> movesWithScores = new ArrayList<>();
+        // List<Pair<Integer, Integer>> movesWithScores = new ArrayList<>();
 
         Integer[] L = B.getAvailableColumns();
 
@@ -322,8 +199,11 @@ public class L2 implements CXPlayer {
         } else {
             value = Integer.MAX_VALUE;
         }
-        //List<Integer> bestMoves = Arrays.asList(L);
 
+        /*
+        // Disabilitiamo la potatura perché NON migliora la precisione dell'algoritmo,
+        // anzi la degrada per com'è attualmente.
+        //
         // Potatura
         for(int i : L) {
             checktime(); // Check timeout at every iteration
@@ -350,6 +230,7 @@ public class L2 implements CXPlayer {
                 .stream()
                 .map(pair -> pair.first)
                 .toList());
+        */
 
         if (maximizing) {
             for (int i : L) {
@@ -399,6 +280,12 @@ public class L2 implements CXPlayer {
     }
 
 
+    /**
+     * Questo metodo attualmente è pressoché identico a Heuristics::checkDoubleAttack.
+     *
+     * O modificarlo in futuro rendendolo critica anziché euristica, oppure può essere rimosso
+     * e si può utilizzare in sua sostituzione il metodo in Heuristics
+     */
     private boolean checkDoubleAttack(StreakBoard sb,
                                        List<Streak> playerStreaks,
                                        String playerName) {
@@ -487,44 +374,6 @@ public class L2 implements CXPlayer {
             }
         }
         return false;
-
-       /* if (B.currentPlayer() == currentPlayer) {
-            return singleMoveWin(B, L) != -1;
-        } else {
-
-            int matches = 0;
-
-            for (int i : L) {
-                checktime(); // Check timeout at every iteration
-                CXGameState state = B.markColumn(i);
-
-                if (state == yourWin) {
-                    // Interrompiamo prima se c'è una vittoria per l'avversario
-                    B.unmarkColumn();
-                    return false;
-                }
-                boolean winFound = false;
-                Integer[] L2 = B.getAvailableColumns();
-                for (int j : L2) {
-                    checktime(); // Check timeout at every iteration
-                    B.markColumn(j);
-                    if (state == myWin) {
-                        winFound = true;
-                        break;
-                    }
-                    B.unmarkColumn();
-                }
-                B.unmarkColumn();
-
-                if (winFound) {
-                    matches += 1;
-                    // Abbiamo bisogno di trovare la vittoria L.length volte per essere
-                    // certi di un doppio attacco
-                }
-            }
-
-            return matches == L.length;
-        }*/
     }
 
     /**
