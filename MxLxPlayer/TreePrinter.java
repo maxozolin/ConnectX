@@ -1,6 +1,6 @@
 package connectx.MxLxPlayer;
 
-import connectx.MxLxPlayer.MxLxDecisionTree;
+import connectx.MxLxPlayer.DecisionTree;
 import connectx.MxLxPlayer.Node;
 import connectx.MxLxPlayer.Tree;
 
@@ -31,7 +31,7 @@ public class TreePrinter {
   }
 
   // Maybe add a name getter callable with signature (node) -> String as parameter
-  public static void printTree(MxLxDecisionTree decison_tree) {
+  public static void printTree(DecisionTree decison_tree) {
     StringBuilder sb = new StringBuilder();
     traversePreOrder(sb, "", "", decison_tree.tree.root);
     System.out.println(sb.toString());

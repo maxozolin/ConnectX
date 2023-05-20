@@ -1,4 +1,4 @@
-package connectx.extension;
+package connectx.MxLxPlayer;
 
 public class Pair <A, B> {
 

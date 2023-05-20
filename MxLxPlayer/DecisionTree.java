@@ -5,7 +5,7 @@ import connectx.MxLxPlayer.Node;
 import java.util.Collections;
 import java.util.List;
 
-public class MxLxDecisionTree {
+public class DecisionTree {
   private Integer current_depth;
   public Tree tree;
   /*
@@ -16,7 +16,7 @@ public class MxLxDecisionTree {
    board: current board state
   */
 
-  public MxLxDecisionTree(CXBoard B, boolean first, Integer depth) {
+  public DecisionTree(CXBoard B, boolean first, Integer depth) {
     tree = makeDecisionTree(B, first, depth);
     current_depth = depth;
   }

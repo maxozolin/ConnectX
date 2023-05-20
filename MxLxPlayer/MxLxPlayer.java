@@ -6,7 +6,7 @@ import connectx.CXCellState;
 import connectx.CXGameState;
 import connectx.CXPlayer;
 import connectx.MxLxPlayer.IllegalyEfficientBoard;
-import connectx.MxLxPlayer.MxLxDecisionTree;
+import connectx.MxLxPlayer.DecisionTree;
 import connectx.MxLxPlayer.TreePrinter;
 import connectx.MxLxPlayer.TimeKeeper;
 import connectx.MxLxPlayer.CriticalMoves;
@@ -29,7 +29,7 @@ public class MxLxPlayer implements CXPlayer {
   private CXGameState myWin;
   private CXGameState yourWin;
   private TimeKeeper timeKeeper;
-  private MxLxDecisionTree decisionTree;
+  private DecisionTree decisionTree;
   private Integer DEPTH = 5;
 
   /* Default empty constructor */
@@ -44,7 +44,7 @@ public class MxLxPlayer implements CXPlayer {
 
     // Forse non va qua ma nella prima mossa, per adesso metto qua
     CXBoard pretend_board = new CXBoard(M, N, K);
-    decisionTree = new MxLxDecisionTree(pretend_board, first, DEPTH);
+    decisionTree = new DecisionTree(pretend_board, first, DEPTH);
   }
 
   /**
