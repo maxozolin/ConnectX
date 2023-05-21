@@ -144,8 +144,8 @@ public class CXGame extends JFrame implements Serializable {
 							ComPlayer[i].initPlayer(B.M, B.N, B.X, i == 0, TIMEOUT);
 							try{
 								CXPlayer pl = ComPlayer[i];
-								Field fl = pl.getClass().getField("debugBoardPanel");
-								fl.set(pl, boardPanel);
+								Field fl = pl.getClass().getField("debugDrawPanel");
+								fl.set(ComPlayer[i], boardPanel);
 							} catch (Exception ex){
 								System.err.println(ex.getMessage());
 							}

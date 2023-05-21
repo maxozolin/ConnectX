@@ -53,6 +53,7 @@ import connectx.CXGame.CXGameType;
 import connectx.CXGame.CXPlayerType;
 
 import connectx.MxLxPlayer.Streak; // DANGER: ADDED
+import connectx.MxLxPlayer.CellCoord; // DANGER: ADDED
 import java.util.List;
 import java.util.ArrayList;
 
@@ -71,7 +72,7 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 	public static final int PLAYER2 = 1; // PLAYER2
 
 	/** Scoring system */
-	private static int WINSCORE  = 3;
+	private static int WINSCORE = 3;
 	private static int DRAWSCORE = 1;
 
 	protected int[] ScorePlayer = new int[2];
@@ -187,30 +188,30 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 
 		// Print status-bar message
 		switch (board.gameState()) {
-		case OPEN:
-			statusBar.setForeground(Color.BLACK);
-			String colorPlayer = board.currentPlayer() == 0 ? "Yellow" : "Red";
-			String msg = Player[board.currentPlayer()] == CXPlayerType.COMPUTER ? "Click to run"
-					: "Click on white bar to select column";
-			String name = Player[board.currentPlayer()] == CXPlayerType.COMPUTER
-					? ComPlayer[board.currentPlayer()].playerName()
-					: "Human";
-			statusBar.setText(colorPlayer + "'s Turn (" + name + ") - " + msg);
-			break;
-		case DRAW:
-			statusBar.setForeground(Color.RED);
-			statusBar.setText("Draw! Click reset to play again.");
-			break;
-		case WINP1:
-			String name1 = Player[0] == CXPlayerType.COMPUTER ? ComPlayer[0].playerName() : "Human";
-			statusBar.setForeground(Color.RED);
-			statusBar.setText("Yellow (" + name1 + ") Won! Click reset to play again.");
-			break;
-		case WINP2:
-			String name2 = Player[1] == CXPlayerType.COMPUTER ? ComPlayer[1].playerName() : "Human";
-			statusBar.setForeground(Color.RED);
-			statusBar.setText("Red (" + name2 + ") Won! Click reset to play again.");
-			break;
+			case OPEN:
+				statusBar.setForeground(Color.BLACK);
+				String colorPlayer = board.currentPlayer() == 0 ? "Yellow" : "Red";
+				String msg = Player[board.currentPlayer()] == CXPlayerType.COMPUTER ? "Click to run"
+						: "Click on white bar to select column";
+				String name = Player[board.currentPlayer()] == CXPlayerType.COMPUTER
+						? ComPlayer[board.currentPlayer()].playerName()
+						: "Human";
+				statusBar.setText(colorPlayer + "'s Turn (" + name + ") - " + msg);
+				break;
+			case DRAW:
+				statusBar.setForeground(Color.RED);
+				statusBar.setText("Draw! Click reset to play again.");
+				break;
+			case WINP1:
+				String name1 = Player[0] == CXPlayerType.COMPUTER ? ComPlayer[0].playerName() : "Human";
+				statusBar.setForeground(Color.RED);
+				statusBar.setText("Yellow (" + name1 + ") Won! Click reset to play again.");
+				break;
+			case WINP2:
+				String name2 = Player[1] == CXPlayerType.COMPUTER ? ComPlayer[1].playerName() : "Human";
+				statusBar.setForeground(Color.RED);
+				statusBar.setText("Red (" + name2 + ") Won! Click reset to play again.");
+				break;
 		}
 		repaint();
 	}
@@ -255,6 +256,27 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 		}
 	}
 
+	private void drawStreaks(Graphics2D g2) {
+		try {
+			Streak firstStreak = streakList.get(0);
+			Color previous = Color[2];
+			for (Streak s : streakList) {
+				// System.err.println("");
+				for (CellCoord c : s.getCells()) {
+					int x = c.j * cellGap + 5;
+					int y = c.i * cellGap + (Board_Top_Border + 5 + extraBorder);
+
+					g2.setPaint(Color[3]);
+					g2.create().fillOval(x + cellGap / 2 - 10, y + cellGap / 2 - 10, 10, 10);
+					// System.out.printf("i: %s; j:%s;\n",cell.i, cell.j);
+				}
+			}
+			// System.err.println(firstStreak);
+		} catch (IndexOutOfBoundsException ex) {
+
+		}
+	}
+
 	/* draw grid board, draw coins(marked cells) and animate win */
 	private void drawGameBoard(Graphics2D g2) {
 
@@ -268,6 +290,7 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 		CXCell[] list = board.getMarkedCells();
 
 		drawCounters(g2, list);
+		drawStreaks(g2);
 
 		if ((gameState == CXGameState.WINP1 || gameState == CXGameState.WINP2) && (!animatingCoinDrop)) {
 			CXCell m = board.getLastMove();
@@ -347,8 +370,9 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 		else if (ovalWidth == 0)
 			ovalWidth = cellGap;
 
-		for (CXCell c : moves) 
-			g2.fillOval(cellGap * c.j + 5 + (cellGap / 2 - ovalWidth / 2), Board_Top_Border + extraBorder + cellGap * c.i + 5, ovalWidth - 10, cellGap - 10);
+		for (CXCell c : moves)
+			g2.fillOval(cellGap * c.j + 5 + (cellGap / 2 - ovalWidth / 2),
+					Board_Top_Border + extraBorder + cellGap * c.i + 5, ovalWidth - 10, cellGap - 10);
 
 		// when game is won a token is added to winning pieces
 		if (winAnimationFrame >= WIN_ANIMATION_FRAMES) {
@@ -358,17 +382,21 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 				else
 					g2.setPaint(getYellowGradientPaint());
 
-				g2.fillOval(cellGap * c.j + 5, Board_Top_Border + extraBorder + cellGap * c.i + 5, cellGap - 10, cellGap - 10);
+				g2.fillOval(cellGap * c.j + 5, Board_Top_Border + extraBorder + cellGap * c.i + 5, cellGap - 10,
+						cellGap - 10);
 
 				if (cellGap == 60) {
 					g2.setPaint(Color.GREEN.darker());
-					g2.drawString("Win!", cellGap * c.j + (cellGap / 5) + 5, Board_Top_Border + extraBorder + cellGap * c.i + (cellGap / 2) + 5);
+					g2.drawString("Win!", cellGap * c.j + (cellGap / 5) + 5,
+							Board_Top_Border + extraBorder + cellGap * c.i + (cellGap / 2) + 5);
 				} else if (cellGap == 45) {
 					g2.setPaint(Color.GREEN.darker());
-					g2.drawString("Win!", cellGap * c.j + (cellGap / 9) + 5, Board_Top_Border + extraBorder + cellGap * c.i + (cellGap / 2) + 5);
+					g2.drawString("Win!", cellGap * c.j + (cellGap / 9) + 5,
+							Board_Top_Border + extraBorder + cellGap * c.i + (cellGap / 2) + 5);
 				} else {
 					g2.setPaint(Color.GREEN.darker());
-					g2.drawString("Win!", cellGap * c.j + (cellGap / 3) + 5, Board_Top_Border + extraBorder + cellGap * c.i + (cellGap / 2) + 5);
+					g2.drawString("Win!", cellGap * c.j + (cellGap / 3) + 5,
+							Board_Top_Border + extraBorder + cellGap * c.i + (cellGap / 2) + 5);
 				}
 			}
 		}
@@ -411,14 +439,14 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 
 	public String getMoveResultText(CXGameState moveResult) {
 		switch (moveResult) {
-		case WINP1:
-			return "Yellow player wins";
-		case WINP2:
-			return "Red player wins";
-		case DRAW:
-			return "DRAW!";
-		case OPEN:
-			return "Error";
+			case WINP1:
+				return "Yellow player wins";
+			case WINP2:
+				return "Red player wins";
+			case DRAW:
+				return "DRAW!";
+			case OPEN:
+				return "Error";
 		}
 		return "Error";
 	}
@@ -450,7 +478,7 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 		// Vertical check
 		n = 1;
 		moves.clear();
-		for (int h = 1; i + h < board.M  && board.cellState(i + h, j) == s; h++) {
+		for (int h = 1; i + h < board.M && board.cellState(i + h, j) == s; h++) {
 			n++;
 			moves.add(new CXCell(i + h, j, s));
 		} // forward check
