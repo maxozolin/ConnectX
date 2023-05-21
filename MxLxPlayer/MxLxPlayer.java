@@ -65,7 +65,8 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumn(CXBoard B){
     debugDisplayer.clear();
-    int col = selectColumnBase(B);
+    //int col = selectColumnBase(B);
+    int col = selectColumnDebug(B);
     StreakBoard streakB = new StreakBoard(B);
     streakB.markColumn(col);
     List<Streak> p1Streaks = streakB.getStreaksP1();
@@ -76,6 +77,21 @@ public class MxLxPlayer implements CXPlayer {
 
   }
 
+  public int selectColumnDebug(CXBoard B) {
+    int col = B.getAvailableColumns()[0];
+    StreakBoard streakB = new StreakBoard(B);
+    Heuristics heuristics =new Heuristics();
+    heuristics.debugStreakDisplayer = debugDisplayer;
+
+    if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP1())) {
+      System.out.println("There is double attack for P1");
+    }
+
+    if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP2())) {
+      System.out.println("There is double attack for P2");
+    }
+    return col;
+  }
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
     StreakBoard streakB = new StreakBoard(B);
@@ -85,6 +101,24 @@ public class MxLxPlayer implements CXPlayer {
     Integer[] L = B.getAvailableColumns();
     int save = L[rand.nextInt(L.length)]; // Save a random column
 
+
+    try {
+      if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP1())) {
+        System.out.println("There is double attack for P1");
+      }
+
+      if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP2())) {
+        System.out.println("There is double attack for P2");
+      }
+      int col = CriticalMoves.singleMoveWin(B, L, myWin);
+      if (col != -1) {
+        System.out.println("Anticipated return (singleMoveWin)");
+        return col;
+      }
+
+    } catch (Exception ex) {
+      System.err.println(ex.getStackTrace());
+    }
     int col = CriticalMoves.singleMoveWin(B, L, myWin);
     if (col != -1) {
       System.err.printf("[+] Can win: %s\n", col);
@@ -111,30 +145,10 @@ public class MxLxPlayer implements CXPlayer {
     if (timeKeeper.ranOutOfTime())
       return save;
 
-    List<Streak> p1Streaks = streakB.getStreaksP1();
-    List<Streak> p2Streaks = streakB.getStreaksP2();
+    //List<Streak> p1Streaks = streakB.getStreaksP1();
+    //List<Streak> p2Streaks = streakB.getStreaksP2();
     //System.out.println(p1Streaks);
 
-    try {
-      if (checkDoubleAttack(streakB, streakB.getStreaksP1(), "P1")) {
-        System.out.println("There is double attack for P1");
-      }
-      if (checkDoubleAttack(streakB, streakB.getStreaksP2(), "P2")) {
-        System.out.println("There is double attack for P2");
-      }
-      if (heuristics.heuristicNMoveWins(streakB, streakB.getStreaksP2(), 1)) {
-        System.out.println("P2 can win in 1 move");
-      }
-
-      col = CriticalMoves.singleMoveWin(B, L, myWin);
-      if (col != -1) {
-        System.out.println("Anticipated return (singleMoveWin)");
-        return col;
-      }
-
-    } catch (Exception ex) {
-      System.err.println(ex.getStackTrace());
-    }
 
     return save;
   }

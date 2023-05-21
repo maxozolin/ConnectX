@@ -7,6 +7,13 @@ import connectx.MxLxPlayer.Streak;
 import connectx.CXBoardPanel;
 
 
+/*
+ * USAGE:
+ * Call DebugStreakDisplayer.clear at the beginning of the move
+ * Add all the streaks you want to visualize wherever in the code
+ * At the end of the move call DebugStreakDisplayer.updateMainDisplay with the debugDrawPanel
+ * debugDrawPanel gets loaded at init into MxLxPlayer
+ */
 public class DebugStreakDisplayer {
     private List<Streak> streaksToDisplay = new ArrayList<Streak>();
     
