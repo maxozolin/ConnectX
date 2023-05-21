@@ -37,6 +37,7 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,6 +51,9 @@ import javax.swing.border.Border;
 
 import connectx.CXGame.CXGameType;
 import connectx.CXGame.CXPlayerType;
+
+import connectx.MxLxPlayer.Streak; // DANGER: ADDED
+import java.util.List;
 
 /**
  * Inner class for custom graphics drawing.
@@ -71,6 +75,7 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 
 	protected int[] ScorePlayer = new int[2];
 
+	public List<Streak> = new ArrayList<Streak>(); // DANGER: ADDED
 	public int Board_Top_Border; // BOARD_TOP_BORDER
 
 	protected CXPlayerType[] Player;
