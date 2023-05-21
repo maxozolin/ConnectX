@@ -34,6 +34,7 @@ public class MxLxPlayer implements CXPlayer {
   private DecisionTree decisionTree;
   private Integer DEPTH = 5;
   public CXBoardPanel debugDrawPanel;
+  private DebugStreakDisplayer debugDisplayer=new DebugStreakDisplayer();
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -63,20 +64,14 @@ public class MxLxPlayer implements CXPlayer {
    */
 
   public int selectColumn(CXBoard B){
+    debugDisplayer.clear();
     int col = selectColumnBase(B);
     StreakBoard streakB = new StreakBoard(B);
     streakB.markColumn(col);
     List<Streak> p1Streaks = streakB.getStreaksP1();
     List<Streak> p2Streaks = streakB.getStreaksP2();
-    try{
-      // CAREFUL WHEN DOING THIS TYPE OF ACCESS
-      // DO NOT ACCESS DIRECTLY, WILL NOT COMPILE 
-      Field slf = debugDrawPanel.getClass().getField("streakList");
-      slf.set(debugDrawPanel, p1Streaks);
+    debugDisplayer.updateMainDisplay(debugDrawPanel);
 
-    } catch (Exception ex){
-
-    }
     return col;
 
   }
@@ -84,6 +79,8 @@ public class MxLxPlayer implements CXPlayer {
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
     StreakBoard streakB = new StreakBoard(B);
+    Heuristics heuristics =new Heuristics();
+    heuristics.debugStreakDisplayer = debugDisplayer;
 
     Integer[] L = B.getAvailableColumns();
     int save = L[rand.nextInt(L.length)]; // Save a random column
@@ -125,7 +122,7 @@ public class MxLxPlayer implements CXPlayer {
       if (checkDoubleAttack(streakB, streakB.getStreaksP2(), "P2")) {
         System.out.println("There is double attack for P2");
       }
-      if (Heuristics.heuristicNMoveWins(streakB, streakB.getStreaksP2(), 1)) {
+      if (heuristics.heuristicNMoveWins(streakB, streakB.getStreaksP2(), 1)) {
         System.out.println("P2 can win in 1 move");
       }
 

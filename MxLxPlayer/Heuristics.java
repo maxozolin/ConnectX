@@ -4,13 +4,16 @@ import connectx.CXCellState;
 import connectx.MxLxPlayer.CellCoord;
 import connectx.MxLxPlayer.Streak;
 import connectx.MxLxPlayer.StreakBoard;
+import connectx.MxLxPlayer.DebugStreakDisplayer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class Heuristics {
-    public static boolean evenPosition(StreakBoard board) {
+    public DebugStreakDisplayer debugStreakDisplayer=new DebugStreakDisplayer();
+
+    public boolean evenPosition(StreakBoard board) {
         int c1 = estimateConnectivity(board, CXCellState.P1);
         int c2 = estimateConnectivity(board, CXCellState.P2);
 
@@ -30,7 +33,7 @@ public class Heuristics {
      * }
      */
 
-    public static int score(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
+    public int score(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
         final List<Streak> myStreaks;
         final List<Streak> opponentStreaks;
 
@@ -73,7 +76,7 @@ public class Heuristics {
 
     static int count = 0;
 
-    public static int score2(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
+    public int score2(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
         CXCellState opponent;
         if (player == CXCellState.P1) {
             opponent = CXCellState.P2;
@@ -142,7 +145,7 @@ public class Heuristics {
         return (int) (scoreA + scoreB);
     }
 
-    public static boolean heuristicNMoveWinsv2(StreakBoard sb,
+    public boolean heuristicNMoveWinsv2(StreakBoard sb,
             List<Streak> playerStreaks,
             int n) {
 
@@ -180,7 +183,7 @@ public class Heuristics {
         return streaksCount >= n;
     }
 
-    public static boolean heuristicNMoveWins(StreakBoard sb,
+    public boolean heuristicNMoveWins(StreakBoard sb,
             List<Streak> playerStreaks,
             int n) {
 
@@ -214,13 +217,13 @@ public class Heuristics {
         return streaksCount >= n;
     }
 
-    public static boolean checkDoubleAttack(StreakBoard sb,
+    public boolean checkDoubleAttack(StreakBoard sb,
             List<Streak> playerStreaks) {
 
         return heuristicNMoveWins(sb, playerStreaks, 2);
     }
 
-    public static int estimateConnectivity(StreakBoard board, CXCellState player) {
+    public int estimateConnectivity(StreakBoard board, CXCellState player) {
         // Euristica:
         // +1 per ogni streak valida
         // +5 per ogni pedina in una streak
