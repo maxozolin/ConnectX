@@ -75,7 +75,7 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 
 	protected int[] ScorePlayer = new int[2];
 
-	public List<Streak> = new ArrayList<Streak>(); // DANGER: ADDED
+	public List<Streak> streakList = new ArrayList<Streak>(); // DANGER: ADDED
 	public int Board_Top_Border; // BOARD_TOP_BORDER
 
 	protected CXPlayerType[] Player;
