@@ -54,6 +54,7 @@ import connectx.CXGame.CXPlayerType;
 
 import connectx.MxLxPlayer.Streak; // DANGER: ADDED
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Inner class for custom graphics drawing.
