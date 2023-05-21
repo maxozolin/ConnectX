@@ -14,20 +14,21 @@ public class Heuristics {
         int c1 = estimateConnectivity(board, CXCellState.P1);
         int c2 = estimateConnectivity(board, CXCellState.P2);
 
-        return Math.abs(c1-c2) < 20;
+        return Math.abs(c1 - c2) < 20;
     }
-/*
-    public static int estimateDominance(StreakBoard board, CXCellState player) {
-        CXCellState opponent;
-
-        if (player == CXCellState.P1) {
-            opponent = CXCellState.P2;
-        } else {
-            opponent = CXCellState.P1;
-        }
-
-        return -estimateConnectivity(board, opponent);
-    }*/
+    /*
+     * public static int estimateDominance(StreakBoard board, CXCellState player) {
+     * CXCellState opponent;
+     * 
+     * if (player == CXCellState.P1) {
+     * opponent = CXCellState.P2;
+     * } else {
+     * opponent = CXCellState.P1;
+     * }
+     * 
+     * return -estimateConnectivity(board, opponent);
+     * }
+     */
 
     public static int score(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
         final List<Streak> myStreaks;
@@ -70,8 +71,8 @@ public class Heuristics {
         return estimateConnectivity(board, player) - estimateConnectivity(board, opponent);
     }
 
-
     static int count = 0;
+
     public static int score2(StreakBoard board, CXCellState player, CXCellState playingPlayer) {
         CXCellState opponent;
         if (player == CXCellState.P1) {
@@ -79,11 +80,14 @@ public class Heuristics {
         } else {
             opponent = CXCellState.P1;
         }
-        long scoreA = (long)estimateConnectivity(board, player); // - estimateConnectivity(board, opponent); // (int) ((float) estimateConnectivity(board, opponent) * 0.5f);
-        long scoreB = (long)-estimateConnectivity(board, opponent);
+        long scoreA = (long) estimateConnectivity(board, player); // - estimateConnectivity(board, opponent); // (int)
+                                                                  // ((float) estimateConnectivity(board, opponent) *
+                                                                  // 0.5f);
+        long scoreB = (long) -estimateConnectivity(board, opponent);
         // TODO: Remove after debug phase is finished
-        if(count > 1000 && count < 1010) {
-            System.out.println("[DEBUG] connectivity player " + player.toString() + ": " + estimateConnectivity(board, player));
+        if (count > 1000 && count < 1010) {
+            System.out.println(
+                    "[DEBUG] connectivity player " + player.toString() + ": " + estimateConnectivity(board, player));
         }
         count++;
 
@@ -138,9 +142,47 @@ public class Heuristics {
         return (int) (scoreA + scoreB);
     }
 
+    public static boolean heuristicNMoveWinsv2(StreakBoard sb,
+            List<Streak> playerStreaks,
+            int n) {
+
+        int streaksCount = 0;
+        for (Streak streak : playerStreaks) {
+            if (!streak.isValid()) {
+                continue;
+            }
+
+            int multiplier = 0;
+            int numberOfCells = streak.getNumberOfCells();
+
+            if (numberOfCells == sb.X - 1) {
+                // Don't care if not about to win
+                continue;
+            }
+
+            for (CellCoord cell : streak.getCells()) {
+                if (cell.getState() != CXCellState.FREE) {
+                    // Only care about free cells
+                    continue;
+                }
+
+                // Check if a move can be made on here.
+                if (cell.i == sb.M - 1 ||
+                        sb.getBoard()[cell.i + 1][cell.j] != CXCellState.FREE) {
+
+                    multiplier = 1;
+                }
+            }
+
+            streaksCount += multiplier;
+        }
+        // System.out.println("There is a double attack for P2");
+        return streaksCount >= n;
+    }
+
     public static boolean heuristicNMoveWins(StreakBoard sb,
-                                              List<Streak> playerStreaks,
-                                              int n) {
+            List<Streak> playerStreaks,
+            int n) {
 
         int streaksCount = 0;
         for (Streak streak : playerStreaks) {
@@ -158,8 +200,8 @@ public class Heuristics {
                 for (CellCoord cell : streak.getCells()) {
                     if (cell.getState() == CXCellState.FREE) {
                         // Check if a move can be made on here.
-                        if (cell.i == sb.M-1 ||
-                                sb.getBoard()[cell.i+1][cell.j] != CXCellState.FREE) {
+                        if (cell.i == sb.M - 1 ||
+                                sb.getBoard()[cell.i + 1][cell.j] != CXCellState.FREE) {
 
                             multiplier = 1;
                         }
@@ -171,8 +213,9 @@ public class Heuristics {
         // System.out.println("There is a double attack for P2");
         return streaksCount >= n;
     }
+
     public static boolean checkDoubleAttack(StreakBoard sb,
-                                      List<Streak> playerStreaks) {
+            List<Streak> playerStreaks) {
 
         return heuristicNMoveWins(sb, playerStreaks, 2);
     }
@@ -216,11 +259,11 @@ public class Heuristics {
                 if (cell.getState() != CXCellState.FREE) {
                     multiplier += 0;
                     if (cell.getState() != player) {
-                        // System.out.println("Evento che non dovrebe mai accadere: " + streak.isValid());
+                        // System.out.println("Evento che non dovrebe mai accadere: " +
+                        // streak.isValid());
                         // multiplier += 1;
                         // continue;
                     }
-
 
                     if (cell.getState() == player) {
                         // multiplier += 2;
@@ -253,7 +296,7 @@ public class Heuristics {
             if (skipList.contains(i)) {
                 continue;
             }
-            for (int j = 0; j < validStreaks.size()/2; j++) {
+            for (int j = 0; j < validStreaks.size() / 2; j++) {
                 if (i == j) {
                     continue;
                 }
@@ -262,7 +305,7 @@ public class Heuristics {
                 }
 
                 if (Streak.doIntersect(validStreaks.get(i), validStreaks.get(j))) {
-                    streaksScores[i] = (int)((float)streaksScores[i] * 1);
+                    streaksScores[i] = (int) ((float) streaksScores[i] * 1);
 
                     skipList.add(i);
                 }
@@ -282,17 +325,19 @@ public class Heuristics {
             return 10000000 * streakFull;
         }
 
-        return validStreaksNumber*4 +
+        return validStreaksNumber * 4 +
                 streakMinus2Count * 2
                 + bonusScore;
 
-        //return IntStream.of(streaksScores).sum(); // validStreaksNumber * 2
-                // + streakMinus2Count * 2
-                // + bonusScore;
+        // return IntStream.of(streaksScores).sum(); // validStreaksNumber * 2
+        // + streakMinus2Count * 2
+        // + bonusScore;
 
-        /*IntStream.of(streaksScores).sum()
-                + validStreaksNumber*2
-                + streakMinus2Count * 20
-                + streakMinus1Count * 100;*/
+        /*
+         * IntStream.of(streaksScores).sum()
+         * + validStreaksNumber*2
+         * + streakMinus2Count * 20
+         * + streakMinus1Count * 100;
+         */
     }
 }

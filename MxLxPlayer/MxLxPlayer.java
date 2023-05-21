@@ -92,14 +92,13 @@ public class MxLxPlayer implements CXPlayer {
 
     List<Streak> p1Streaks = streakB.getStreaksP1();
     List<Streak> p2Streaks = streakB.getStreaksP2();
+    //System.out.println(p1Streaks);
+
     try {
-      if (CriticalMoves.checkDoubleAttack(streakB, streakB.getStreaksP1(), "P1")) {
+      if (checkDoubleAttack(streakB, streakB.getStreaksP1(), "P1")) {
         System.out.println("There is double attack for P1");
       }
-      if (CriticalMoves.checkDoubleAttack(streakB, streakB.getStreaksP2(), "P2")) {
-        System.out.println("There is double attack for P2");
-      }
-      if (CriticalMoves.checkDoubleAttack(streakB, streakB.getStreaksP2(), "P2")) {
+      if (checkDoubleAttack(streakB, streakB.getStreaksP2(), "P2")) {
         System.out.println("There is double attack for P2");
       }
       if (Heuristics.heuristicNMoveWins(streakB, streakB.getStreaksP2(), 1)) {
@@ -117,6 +116,43 @@ public class MxLxPlayer implements CXPlayer {
     }
 
     return save;
+  }
+
+  private boolean checkDoubleAttack(StreakBoard sb,
+      List<Streak> playerStreaks,
+      String playerName) {
+
+    int streaksCount = 0;
+    for (Streak streak : playerStreaks) {
+      int count = 0;
+      int multiplier = 0;
+      if (!streak.isValid()) {
+        continue;
+      }
+      for (CellCoord cell : streak.getCells()) {
+        if (cell.getState() == streak.state) {
+          count++;
+        }
+      }
+      if (count == sb.X) {
+        System.out.println("PLAYER " + playerName + " HAS WON");
+      }
+      if (count == sb.X - 1) {
+        for (CellCoord cell : streak.getCells()) {
+          if (cell.getState() == CXCellState.FREE) {
+            // Check if a move can be made on here.
+            if (cell.i == sb.M - 1 ||
+                sb.getBoard()[cell.i + 1][cell.j] != CXCellState.FREE) {
+
+              multiplier = 1;
+            }
+          }
+        }
+        streaksCount += multiplier;
+      }
+    }
+    // System.out.println("There is a double attack for P2");
+    return streaksCount >= 2;
   }
 
   public String playerName() {
