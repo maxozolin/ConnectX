@@ -61,7 +61,27 @@ public class MxLxPlayer implements CXPlayer {
    * cases do not apply, selects a random column.
    * </p>
    */
-  public int selectColumn(CXBoard B) {
+
+  public int selectColumn(CXBoard B){
+    int col = selectColumnBase(B);
+    StreakBoard streakB = new StreakBoard(B);
+    streakB.markColumn(col);
+    List<Streak> p1Streaks = streakB.getStreaksP1();
+    List<Streak> p2Streaks = streakB.getStreaksP2();
+    try{
+      // CAREFUL WHEN DOING THIS TYPE OF ACCESS
+      // DO NOT ACCESS DIRECTLY, WILL NOT COMPILE 
+      Field slf = debugDrawPanel.getClass().getField("streakList");
+      slf.set(debugDrawPanel, p1Streaks);
+
+    } catch (Exception ex){
+
+    }
+    return col;
+
+  }
+
+  public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
     StreakBoard streakB = new StreakBoard(B);
 
@@ -96,15 +116,6 @@ public class MxLxPlayer implements CXPlayer {
 
     List<Streak> p1Streaks = streakB.getStreaksP1();
     List<Streak> p2Streaks = streakB.getStreaksP2();
-    try{
-      // CAREFUL WHEN DOING THIS TYPE OF ACCESS
-      // DO NOT ACCESS DIRECTLY, WILL NOT COMPILE 
-      Field slf = debugDrawPanel.getClass().getField("streakList");
-      slf.set(debugDrawPanel, p1Streaks);
-
-    } catch (Exception ex){
-
-    }
     //System.out.println(p1Streaks);
 
     try {

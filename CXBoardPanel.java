@@ -258,8 +258,8 @@ public class CXBoardPanel extends JPanel implements MouseListener, MouseMotionLi
 
 	private void drawStreaks(Graphics2D g2) {
 		try {
-			Streak firstStreak = streakList.get(0);
-			Color[] colors = {Color.GREEN, Color.MAGENTA, Color.BLUE, Color.BLACK};
+			Streak firstStreak = streakList.get(streakList.size()-1);
+			Color[] colors = {Color.GREEN, Color.MAGENTA, Color.BLUE, Color.BLACK, Color.ORANGE, Color.YELLOW};
 			int i = 0;
 			for (Streak s : streakList) {
 				// System.err.println("");
