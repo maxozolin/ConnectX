@@ -1,6 +1,7 @@
 package connectx.MxLxPlayer;
 
 import connectx.CXBoard;
+import connectx.CXBoardPanel;
 import connectx.CXCell;
 import connectx.CXCellState;
 import connectx.CXGameState;
@@ -32,6 +33,7 @@ public class MxLxPlayer implements CXPlayer {
   private TimeKeeper timeKeeper;
   private DecisionTree decisionTree;
   private Integer DEPTH = 5;
+  public CXBoardPanel debugDrawPanel;
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -48,6 +50,8 @@ public class MxLxPlayer implements CXPlayer {
     CXBoard pretend_board = new CXBoard(M, N, K);
     // decisionTree = new DecisionTree(pretend_board, first, DEPTH);
   }
+
+
 
   /**
    * Selects a free colum on game board.
@@ -92,6 +96,15 @@ public class MxLxPlayer implements CXPlayer {
 
     List<Streak> p1Streaks = streakB.getStreaksP1();
     List<Streak> p2Streaks = streakB.getStreaksP2();
+    try{
+      // CAREFUL WHEN DOING THIS TYPE OF ACCESS
+      // DO NOT ACCESS DIRECTLY, WILL NOT COMPILE 
+      Field slf = debugDrawPanel.getClass().getField("streakList");
+      slf.set(debugDrawPanel, p1Streaks);
+
+    } catch (Exception ex){
+
+    }
     //System.out.println(p1Streaks);
 
     try {
