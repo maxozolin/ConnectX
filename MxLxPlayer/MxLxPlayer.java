@@ -154,7 +154,7 @@ public class MxLxPlayer implements CXPlayer {
           winning_moves++;
         }
       } catch (IllegalStateException ex) {
-        System.err.println(ex.getMessage());
+        //System.err.println(ex.getMessage());
       }
     }
 
