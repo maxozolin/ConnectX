@@ -15,7 +15,7 @@ public class StreakBoard extends CXBoard {
     protected List<Streak> streaksP1;
 
     protected List<Streak> streaksP2;
-    CXCellState[][] pubBoard=super.B; //This exposes the protected board
+    CXCellState[][] packageBoard; //This exposes the protected board
 
     public List<Streak> getStreaksP1() {
         return streaksP1;
@@ -35,12 +35,14 @@ public class StreakBoard extends CXBoard {
      */
     public StreakBoard(int M, int N, int X) throws IllegalArgumentException {
         super(M, N, X);
+        this.packageBoard = super.B;
         streaksP1 = new ArrayList<>();
         streaksP2 = new ArrayList<>();
     }
 
     public StreakBoard(CXBoard cxBoard) {
         super(cxBoard.M, cxBoard.N, cxBoard.X);
+        this.packageBoard = super.B;
         streaksP1 = new ArrayList<>();
         streaksP2 = new ArrayList<>();
 

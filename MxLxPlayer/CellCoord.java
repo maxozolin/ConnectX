@@ -23,7 +23,7 @@ public class CellCoord {
 
     //public final CXCellState state;
     public CXCellState getState() {
-        return board.pubBoard[i][j];
+        return board.packageBoard[i][j];
     }
 
     @Override
