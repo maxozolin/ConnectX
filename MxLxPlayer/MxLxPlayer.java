@@ -65,8 +65,8 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumn(CXBoard B){
     debugDisplayer.clear();
-    //int col = selectColumnBase(B);
-    int col = selectColumnDebug(B);
+    int col = selectColumnBase(B);
+    //int col = selectColumnDebug(B);
     StreakBoard streakB = new StreakBoard(B);
     streakB.markColumn(col);
     List<Streak> p1Streaks = streakB.getStreaksP1();
@@ -144,11 +144,6 @@ public class MxLxPlayer implements CXPlayer {
 
     if (timeKeeper.ranOutOfTime())
       return save;
-
-    //List<Streak> p1Streaks = streakB.getStreaksP1();
-    //List<Streak> p2Streaks = streakB.getStreaksP2();
-    //System.out.println(p1Streaks);
-
 
     return save;
   }
