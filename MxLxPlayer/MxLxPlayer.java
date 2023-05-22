@@ -180,7 +180,7 @@ public class MxLxPlayer implements CXPlayer {
     return false;
   }
 
-  private boolean findDoubleAttackv2(CXBoard board, CXGameState winningState) {
+  private Integer findDoubleAttackv2(CXBoard board, CXGameState winningState) {
     boolean haveToSwich = (winningState == yourWin);
     CXGameState opponentWin = winningState == yourWin ? myWin : yourWin;
 
@@ -202,13 +202,13 @@ public class MxLxPlayer implements CXPlayer {
     //NOT CORRECT
     //LOCALIZE haveToBlock
     if (haveToBlock != -1) {
-      blockWins = Boolean.logicalOr(blockWins, checkDoubleAttack_twoWins(board, haveToBlock, winningState));
+      blockWins = Boolean.logicalOr(blockWins, checkDoubleAttack_blockWins(board, haveToBlock, winningState));
     }
 
     if (haveToSwich)
       IllegalyEfficientBoard.swapCurrentPlayer(board);
 
-    return Boolean.logicalOr(twoWins, blockWins);
+    return -1;
   }
 
   private boolean checkDoubleAttackv2(CXBoard board, CXGameState winningState) {

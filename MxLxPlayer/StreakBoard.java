@@ -15,6 +15,7 @@ public class StreakBoard extends CXBoard {
     protected List<Streak> streaksP1;
 
     protected List<Streak> streaksP2;
+    public CXCellState[][] pubBoard=super.B; //This exposes the protected board
 
     public List<Streak> getStreaksP1() {
         return streaksP1;
@@ -47,6 +48,7 @@ public class StreakBoard extends CXBoard {
             this.markColumn(c.j);
             markCount--; // to balance out from copies.
         }
+
     }
 
     public static long markCount = 0;
