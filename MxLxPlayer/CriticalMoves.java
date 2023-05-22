@@ -71,6 +71,33 @@ public class CriticalMoves {
     return ret;
   }
 
+  static public int localizedSingleMoveBlock(CXBoard B, Integer localColumn, CXGameState yourWin){
+    int ret = -1;
+    IllegalyEfficientBoard.swapCurrentPlayer(B);
+
+    int nCols = B.N;
+    int nConnect = B.X;
+
+    int startIndex = Math.max(0, localColumn - nConnect);
+    int endIndex = Math.min(nCols, localColumn + nConnect);
+    
+    for (int i=startIndex; i< endIndex; i++) {
+      try{
+        CXGameState marked = B.markColumn(i);
+        B.unmarkColumn();
+        if (marked == yourWin) {
+          ret = i;
+          break;
+        }
+      } catch (IllegalStateException ex){
+        // No harm done
+      }
+    }
+
+    IllegalyEfficientBoard.swapCurrentPlayer(B);
+    return ret;
+  }
+
   /*
    * Returns a list of moves that do not allow the opponent to win next move.
    */

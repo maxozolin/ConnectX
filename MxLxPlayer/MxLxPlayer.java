@@ -11,7 +11,11 @@ import connectx.MxLxPlayer.DecisionTree;
 import connectx.MxLxPlayer.TreePrinter;
 import connectx.MxLxPlayer.TimeKeeper;
 import connectx.MxLxPlayer.CriticalMoves;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
@@ -65,7 +69,16 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumn(CXBoard B) {
     debugDisplayer.clear();
-    int col = selectColumnBase(B);
+    int col = B.getAvailableColumns()[0];
+    try{
+      col = selectColumnBase(B);
+    } catch (Exception ex ){
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      ex.printStackTrace(pw);
+      System.err.println("======= ERR ========");
+      System.err.println(sw.toString());
+    }
     // int col = selectColumnDebug(B);
     // StreakBoard streakB = new StreakBoard(B);
     // streakB.markColumn(col);
@@ -95,26 +108,25 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
-    StreakBoard streakB = new StreakBoard(B);
+    // StreakBoard streakB = new StreakBoard(B);
     Heuristics heuristics = new Heuristics();
     heuristics.debugStreakDisplayer = debugDisplayer;
 
     Integer[] L = B.getAvailableColumns();
     int save = L[rand.nextInt(L.length)]; // Save a random column
 
-    if (checkDoubleAttackv2(B, myWin)) {
-      System.out.println("There is double attack for P1");
-    }
+    System.out.printf("--- Looking for Me ---\n");
+    List<Integer> datt1 = findDoubleAttacksv2(B, myWin);
 
-    if (checkDoubleAttackv2(B, yourWin)) {
-      System.out.println("There is double attack for P2");
-    }
+    System.out.printf("--- Looking for You---\n");
+    List<Integer> datt2 = findDoubleAttacksv2(B, yourWin);
 
     int col = CriticalMoves.singleMoveWin(B, L, myWin);
     if (col != -1) {
       System.err.printf("[+] Can win: %s\n", col);
       return col;
     }
+
 
     if (timeKeeper.ranOutOfTime())
       return save;
@@ -131,6 +143,18 @@ public class MxLxPlayer implements CXPlayer {
     Integer[] L_not_stupid = CriticalMoves.notOpponentWinsNext(L, B, yourWin);
     if (L_not_stupid.length > 0) {
       save = L_not_stupid[rand.nextInt(L_not_stupid.length)]; // Save a random column that is not stupid
+    }
+
+    //RIGHT BECAUSE DOUBLE ATTACK
+    if (datt1.size() != 0) {
+      System.out.printf("There is double attack for ME: %s\n", datt1);
+      return datt1.get(rand.nextInt(datt1.size()));
+    }
+
+    if (datt2.size() != 0) {
+      System.out.printf("There is double attack for YOU: %s\n", datt2);
+      // TO CHANGE FOR CONNECTIVITY
+      return datt2.get(rand.nextInt(datt2.size()));
     }
 
     if (timeKeeper.ranOutOfTime())
@@ -154,7 +178,7 @@ public class MxLxPlayer implements CXPlayer {
           winning_moves++;
         }
       } catch (IllegalStateException ex) {
-        //System.err.println(ex.getMessage());
+        // System.err.println(ex.getMessage());
       }
     }
 
@@ -180,35 +204,70 @@ public class MxLxPlayer implements CXPlayer {
     return false;
   }
 
-  private Integer findDoubleAttackv2(CXBoard board, CXGameState winningState) {
+  private List<Integer> findDoubleAttacksv2(CXBoard board, CXGameState winningState) {
     boolean haveToSwich = (winningState == yourWin);
-    CXGameState opponentWin = winningState == yourWin ? myWin : yourWin;
+    CXGameState localOpponentWin = winningState == yourWin ? myWin : yourWin;
+    CXGameState localMyWin = winningState == yourWin ? yourWin : myWin;
+
+    List<Integer> ret = new ArrayList<Integer>();
 
     if (haveToSwich)
       IllegalyEfficientBoard.swapCurrentPlayer(board);
 
     boolean twoWins = false;
     boolean blockWins = false;
-    Integer haveToBlock = CriticalMoves.singleMoveBlock(board, board.getAvailableColumns(), opponentWin);
 
     for (Integer m : board.getAvailableColumns()) {
+      boolean stop = false;
+
       board.markColumn(m);
-      if (checkDoubleAttack_twoWins(board, m, winningState)) {
-        return m;
+
+      IllegalyEfficientBoard.swapCurrentPlayer(board);
+      boolean datt = checkDoubleAttack_twoWins(board, m, winningState);
+      IllegalyEfficientBoard.swapCurrentPlayer(board);
+      if (datt) {
+        stop = true;
+        ret.add(m);
       }
+
       board.unmarkColumn();
     }
 
-    //NOT CORRECT
-    //LOCALIZE haveToBlock
-    if (haveToBlock != -1) {
-      blockWins = Boolean.logicalOr(blockWins, checkDoubleAttack_blockWins(board, haveToBlock, winningState));
+
+    System.err.printf("MOVES : %s\n", board.getLastMove());
+    for (Integer m : board.getAvailableColumns()) {
+      board.markColumn(m);
+
+      int haveToBlock = CriticalMoves.localizedSingleMoveBlock(board, m, localMyWin);
+
+      //System.err.printf("Considering %s: %s\n", m, haveToBlock);
+      if(haveToBlock != -1){
+        try{
+          board.markColumn(haveToBlock);
+        } catch (IllegalAccessError ex) {
+          continue;
+        }
+
+        try{
+          CXGameState gs = board.markColumn(haveToBlock);
+          board.unmarkColumn();
+          System.err.printf("Considering %s: %s\nLocalWin: %s\n", m, gs, localMyWin);
+          if(gs == localMyWin){
+            ret.add(m);
+          }
+        } catch (IllegalAccessError | IllegalStateException ex) {
+        }
+        board.unmarkColumn();
+
+      }
+      board.unmarkColumn();
     }
+    System.err.printf("MOVES : %s\n", board.getLastMove());
 
     if (haveToSwich)
       IllegalyEfficientBoard.swapCurrentPlayer(board);
 
-    return -1;
+    return ret;
   }
 
   private boolean checkDoubleAttackv2(CXBoard board, CXGameState winningState) {
