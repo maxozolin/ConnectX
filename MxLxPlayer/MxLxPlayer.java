@@ -19,6 +19,8 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.TimeoutException;
 
+import javax.swing.border.Border;
+
 /**
  * Software player only a bit smarter than random.
  * <p>
@@ -34,7 +36,7 @@ public class MxLxPlayer implements CXPlayer {
   private DecisionTree decisionTree;
   private Integer DEPTH = 5;
   public CXBoardPanel debugDrawPanel;
-  private DebugStreakDisplayer debugDisplayer=new DebugStreakDisplayer();
+  private DebugStreakDisplayer debugDisplayer = new DebugStreakDisplayer();
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -52,8 +54,6 @@ public class MxLxPlayer implements CXPlayer {
     // decisionTree = new DecisionTree(pretend_board, first, DEPTH);
   }
 
-
-
   /**
    * Selects a free colum on game board.
    * <p>
@@ -63,15 +63,15 @@ public class MxLxPlayer implements CXPlayer {
    * </p>
    */
 
-  public int selectColumn(CXBoard B){
+  public int selectColumn(CXBoard B) {
     debugDisplayer.clear();
     int col = selectColumnBase(B);
-    //int col = selectColumnDebug(B);
-    StreakBoard streakB = new StreakBoard(B);
-    streakB.markColumn(col);
-    List<Streak> p1Streaks = streakB.getStreaksP1();
-    List<Streak> p2Streaks = streakB.getStreaksP2();
-    debugDisplayer.updateMainDisplay(debugDrawPanel);
+    // int col = selectColumnDebug(B);
+    // StreakBoard streakB = new StreakBoard(B);
+    // streakB.markColumn(col);
+    // List<Streak> p1Streaks = streakB.getStreaksP1();
+    // List<Streak> p2Streaks = streakB.getStreaksP2();
+    // debugDisplayer.updateMainDisplay(debugDrawPanel);
 
     return col;
 
@@ -79,46 +79,37 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumnDebug(CXBoard B) {
     int col = B.getAvailableColumns()[0];
-    StreakBoard streakB = new StreakBoard(B);
-    Heuristics heuristics =new Heuristics();
+    // StreakBoard streakB = new StreakBoard(B);
+    Heuristics heuristics = new Heuristics();
     heuristics.debugStreakDisplayer = debugDisplayer;
 
-    if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP1())) {
+    if (checkDoubleAttackv2(B, myWin)) {
       System.out.println("There is double attack for P1");
     }
 
-    if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP2())) {
+    if (checkDoubleAttackv2(B, yourWin)) {
       System.out.println("There is double attack for P2");
     }
     return col;
   }
+
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
     StreakBoard streakB = new StreakBoard(B);
-    Heuristics heuristics =new Heuristics();
+    Heuristics heuristics = new Heuristics();
     heuristics.debugStreakDisplayer = debugDisplayer;
 
     Integer[] L = B.getAvailableColumns();
     int save = L[rand.nextInt(L.length)]; // Save a random column
 
-
-    try {
-      if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP1())) {
-        System.out.println("There is double attack for P1");
-      }
-
-      if (heuristics.checkDoubleAttack(streakB, streakB.getStreaksP2())) {
-        System.out.println("There is double attack for P2");
-      }
-      int col = CriticalMoves.singleMoveWin(B, L, myWin);
-      if (col != -1) {
-        System.out.println("Anticipated return (singleMoveWin)");
-        return col;
-      }
-
-    } catch (Exception ex) {
-      System.err.println(ex.getStackTrace());
+    if (checkDoubleAttackv2(B, myWin)) {
+      System.out.println("There is double attack for P1");
     }
+
+    if (checkDoubleAttackv2(B, yourWin)) {
+      System.out.println("There is double attack for P2");
+    }
+
     int col = CriticalMoves.singleMoveWin(B, L, myWin);
     if (col != -1) {
       System.err.printf("[+] Can win: %s\n", col);
@@ -146,6 +137,101 @@ public class MxLxPlayer implements CXPlayer {
       return save;
 
     return save;
+  }
+
+  private boolean checkDoubleAttack_twoWins(CXBoard board, Integer startIndex,
+      CXGameState winningState) {
+    int winning_moves = 0;
+    Integer cols = board.N;
+    Integer toConnect = board.X;
+
+    for (int i = Math.max(startIndex - toConnect, 0); i < Math.min(startIndex + toConnect, cols); i++) {
+      try {
+        CXGameState gs = board.markColumn(i);
+        board.unmarkColumn();
+
+        if (gs == winningState) {
+          winning_moves++;
+        }
+      } catch (IllegalStateException ex) {
+        System.err.println(ex.getMessage());
+      }
+    }
+
+    return winning_moves >= 2;
+  }
+
+  private boolean checkDoubleAttack_blockWins(CXBoard board, Integer blockingCol, CXGameState winningState) {
+    try {
+      // block
+      board.markColumn(blockingCol);
+
+      // moveAfterBlock
+      CXGameState gs = board.markColumn(blockingCol);
+
+      if (gs == winningState) {
+        return true;
+      }
+
+    } catch (IllegalStateException ex) {
+      // Don't care
+
+    }
+    return false;
+  }
+
+  private boolean findDoubleAttackv2(CXBoard board, CXGameState winningState) {
+    boolean haveToSwich = (winningState == yourWin);
+    CXGameState opponentWin = winningState == yourWin ? myWin : yourWin;
+
+    if (haveToSwich)
+      IllegalyEfficientBoard.swapCurrentPlayer(board);
+
+    boolean twoWins = false;
+    boolean blockWins = false;
+    Integer haveToBlock = CriticalMoves.singleMoveBlock(board, board.getAvailableColumns(), opponentWin);
+
+    for (Integer m : board.getAvailableColumns()) {
+      board.markColumn(m);
+      if (checkDoubleAttack_twoWins(board, m, winningState)) {
+        return m;
+      }
+      board.unmarkColumn();
+    }
+
+    //NOT CORRECT
+    //LOCALIZE haveToBlock
+    if (haveToBlock != -1) {
+      blockWins = Boolean.logicalOr(blockWins, checkDoubleAttack_twoWins(board, haveToBlock, winningState));
+    }
+
+    if (haveToSwich)
+      IllegalyEfficientBoard.swapCurrentPlayer(board);
+
+    return Boolean.logicalOr(twoWins, blockWins);
+  }
+
+  private boolean checkDoubleAttackv2(CXBoard board, CXGameState winningState) {
+    boolean haveToSwich = (winningState == yourWin);
+    CXGameState opponentWin = winningState == yourWin ? myWin : yourWin;
+
+    if (haveToSwich)
+      IllegalyEfficientBoard.swapCurrentPlayer(board);
+
+    boolean twoWins = false;
+    boolean blockWins = false;
+    Integer haveToBlock = CriticalMoves.singleMoveBlock(board, board.getAvailableColumns(), opponentWin);
+    for (Integer m : board.getAvailableColumns()) {
+      twoWins = Boolean.logicalOr(twoWins, checkDoubleAttack_twoWins(board, m, winningState));
+    }
+    if (haveToBlock != -1) {
+      blockWins = Boolean.logicalOr(blockWins, checkDoubleAttack_twoWins(board, haveToBlock, winningState));
+    }
+
+    if (haveToSwich)
+      IllegalyEfficientBoard.swapCurrentPlayer(board);
+
+    return Boolean.logicalOr(twoWins, blockWins);
   }
 
   private boolean checkDoubleAttack(StreakBoard sb,

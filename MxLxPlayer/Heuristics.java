@@ -200,7 +200,7 @@ public class Heuristics {
                 }
             }
             if (count == sb.X - 1) {
-                debugStreakDisplayer.addStreak(streak);
+                //debugStreakDisplayer.addStreak(streak);
                 for (CellCoord cell : streak.getCells()) {
                     if (cell.getState() == CXCellState.FREE) {
                         // Check if a move can be made on here.
