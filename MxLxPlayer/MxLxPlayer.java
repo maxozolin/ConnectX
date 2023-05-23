@@ -70,9 +70,9 @@ public class MxLxPlayer implements CXPlayer {
   public int selectColumn(CXBoard B) {
     debugDisplayer.clear();
     int col = B.getAvailableColumns()[0];
-    try{
+    try {
       col = selectColumnBase(B);
-    } catch (Exception ex ){
+    } catch (Exception ex) {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);
       ex.printStackTrace(pw);
@@ -115,10 +115,10 @@ public class MxLxPlayer implements CXPlayer {
     Integer[] L = B.getAvailableColumns();
     int save = L[rand.nextInt(L.length)]; // Save a random column
 
-    //System.out.printf("--- Looking for Me ---\n");
+    // System.out.printf("--- Looking for Me ---\n");
     List<Integer> datt1 = findDoubleAttacksv2(B, myWin);
 
-    //System.out.printf("--- Looking for You---\n");
+    // System.out.printf("--- Looking for You---\n");
     List<Integer> datt2 = findDoubleAttacksv2(B, yourWin);
 
     int col = CriticalMoves.singleMoveWin(B, L, myWin);
@@ -126,7 +126,6 @@ public class MxLxPlayer implements CXPlayer {
       System.err.printf("[+] Can win: %s\n", col);
       return col;
     }
-
 
     if (timeKeeper.ranOutOfTime())
       return save;
@@ -145,13 +144,13 @@ public class MxLxPlayer implements CXPlayer {
       save = L_not_stupid[rand.nextInt(L_not_stupid.length)]; // Save a random column that is not stupid
     }
 
-    //Random choice because double attack for me, opponent can only block one
+    // Random choice because double attack for me, opponent can only block one
     if (datt1.size() != 0) {
       System.out.printf("[+] Double Attack for ME: %s\n", datt1);
       return datt1.get(rand.nextInt(datt1.size()));
     }
 
-    //To determine how i want to block Double Attack, estimate for connectivity
+    // To determine how i want to block Double Attack, estimate for connectivity
     if (datt2.size() != 0) {
       System.out.printf("[-] Double Attack for OPPONENT: %s\n", datt2);
       return datt2.get(rand.nextInt(datt2.size()));
@@ -160,7 +159,192 @@ public class MxLxPlayer implements CXPlayer {
     if (timeKeeper.ranOutOfTime())
       return save;
 
+    int maxDepth = 3;
+
+    int maxScore = Integer.MIN_VALUE;
+    int bestMove = -1;
+
+    int positionScore = minimax2(
+        (StreakBoard) B,
+        true,
+        Integer.MIN_VALUE,
+        Integer.MAX_VALUE,
+        0,
+        maxDepth);
+
+    for (Integer colMove : L) {
+      B.markColumn(colMove);
+      int score = minimax2(
+          (StreakBoard) B,
+          false,
+          Integer.MIN_VALUE,
+          Integer.MAX_VALUE,
+          0,
+          maxDepth);
+      B.unmarkColumn();
+
+      // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
+      if (maxScore <= score) {
+        maxScore = score;
+        bestMove = colMove;
+      }
+    }
+    if (bestMove != -1) {
+      return bestMove;
+    }
+
     return save;
+  }
+
+  private int minimax2(
+      StreakBoard B,
+      boolean maximizing,
+      int alpha,
+      int beta,
+      int depth,
+      int depthMax) throws TimeoutException {
+    final CXGameState localMySide;
+    final CXGameState localOpponentSide;
+    final CXCellState localPlayer;
+
+    localPlayer = Player[B.currentPlayer()];
+    localMySide = localPlayer == CXCellState.P1 ? CXGameState.WINP1 : CXGameState.WINP2;
+
+    localOpponentSide = localPlayer == CXCellState.P1 ? CXGameState.WINP2 : CXGameState.WINP1;
+    // localOpponentSide = Player[1-B.currentPlayer()];
+
+    /*
+     * if (maximizing) {
+     * localMySide = myWin;
+     * localOpponentSide = yourWin;
+     * localPlayer = Player[l2Player];
+     * } else {
+     * localPlayer = Player[1-l2Player];
+     * localMySide = yourWin;
+     * localOpponentSide = myWin;
+     * }
+     */
+
+    if (B.gameState() == CXGameState.DRAW) {
+      return 0;
+    }
+    // If game is finished, stop here
+    if (B.gameState() != CXGameState.OPEN) {
+      // return signify(B.gameState(), maximizing);
+      if (maximizing) {
+        if (B.gameState() == localMySide) {
+          return Integer.MAX_VALUE;
+        } else {
+          return Integer.MIN_VALUE;
+        }
+      } else {
+        if (B.gameState() == localMySide) {
+          return Integer.MIN_VALUE;
+        } else {
+          return Integer.MAX_VALUE;
+        }
+      }
+    }
+
+    if (depth == depthMax) {
+      // Euristica
+      int sign = maximizing ? +1 : -1;
+      return sign * Heuristics.score(B, localPlayer, Player[B.currentPlayer()]);
+    }
+
+    int canWinSingleMove = singleMoveWin(B, B.getAvailableColumns(), localMySide);
+
+    if (canWinSingleMove != -1) {
+      // System.out.println("MAXIMIZING HERE!!!!");
+      if (maximizing) {
+        return Integer.MAX_VALUE;
+      } else {
+        return Integer.MIN_VALUE;
+      }
+      /*
+       * if (Player[B.currentPlayer()] == localPlayer) {
+       * if (maximizing) {
+       * return Integer.MAX_VALUE;
+       * } else {
+       * return Integer.MIN_VALUE;
+       * }
+       * } else {
+       * if (maximizing) {
+       * return Integer.MIN_VALUE;
+       * } else {
+       * return Integer.MAX_VALUE;
+       * }
+       * }
+       */
+    }
+
+    List<Pair<Integer, Integer>> movesWithScores = new ArrayList<>();
+
+    Integer[] L = B.getAvailableColumns();
+
+    int value;
+    if (maximizing) {
+      value = Integer.MIN_VALUE;
+    } else {
+      value = Integer.MAX_VALUE;
+    }
+    // List<Integer> bestMoves = Arrays.asList(L);
+
+    // Potatura
+    for (int i : L) {
+      checktime(); // Check timeout at every iteration
+      CXGameState state = B.markColumn(i);
+
+      // If we win straight-away, we pick that
+      if (state == localMySide) {
+        if (maximizing) {
+          return Integer.MAX_VALUE;
+        } else {
+          return Integer.MIN_VALUE;
+        }
+      }
+
+      int connectivityScore = Heuristics.estimateConnectivity(B, Player[B.currentPlayer()]);
+      movesWithScores.add(new Pair<>(i, connectivityScore));
+
+      B.unmarkColumn();
+    }
+
+    movesWithScores.sort((a, b) -> b.second.compareTo(a.second));
+    List<Integer> bestMoves = new ArrayList<>(movesWithScores
+        .subList(0, Math.min(4, movesWithScores.size()))
+        .stream()
+        .map(pair -> pair.first)
+        .toList());
+
+    if (maximizing) {
+      for (int i : L) {
+        B.markColumn(i);
+        value = Math.max(value, minimax2(B, false, alpha, beta, depth + 1, depthMax));
+        B.unmarkColumn();
+        if (value > beta) {
+          return beta; // Beta-cutoff
+        }
+        alpha = Math.max(alpha, value);
+      }
+    } else {
+      for (int i : L) {
+        B.markColumn(i);
+        value = Math.min(value, minimax2(B, true, alpha, beta, depth + 1, depthMax));
+        B.unmarkColumn();
+
+        if (value < alpha) {
+          return alpha; // Alpha-cutoff
+        }
+        beta = Math.min(beta, value);
+      }
+    }
+    return value;
+  }
+
+  private void checktime() throws TimeoutException {
+    if ((System.currentTimeMillis() - startTime) / 1000.0 >= timeoutTime * (99.0 / 100.0))
+      throw new TimeoutException();
   }
 
   private boolean checkDoubleAttack_twoWins(CXBoard board, Integer startIndex,
@@ -233,26 +417,25 @@ public class MxLxPlayer implements CXPlayer {
       board.unmarkColumn();
     }
 
-
-    //System.err.printf("MOVES : %s\n", board.getLastMove());
+    // System.err.printf("MOVES : %s\n", board.getLastMove());
     for (Integer m : board.getAvailableColumns()) {
       board.markColumn(m);
 
       int haveToBlock = CriticalMoves.localizedSingleMoveBlock(board, m, localMyWin);
 
-      //System.err.printf("Considering %s: %s\n", m, haveToBlock);
-      if(haveToBlock != -1){
-        try{
+      // System.err.printf("Considering %s: %s\n", m, haveToBlock);
+      if (haveToBlock != -1) {
+        try {
           board.markColumn(haveToBlock);
         } catch (IllegalAccessError ex) {
           continue;
         }
 
-        try{
+        try {
           CXGameState gs = board.markColumn(haveToBlock);
           board.unmarkColumn();
-          //System.err.printf("Considering %s: %s\nLocalWin: %s\n", m, gs, localMyWin);
-          if(gs == localMyWin){
+          // System.err.printf("Considering %s: %s\nLocalWin: %s\n", m, gs, localMyWin);
+          if (gs == localMyWin) {
             ret.add(m);
           }
         } catch (IllegalAccessError | IllegalStateException ex) {
@@ -262,7 +445,7 @@ public class MxLxPlayer implements CXPlayer {
       }
       board.unmarkColumn();
     }
-    //System.err.printf("MOVES : %s\n", board.getLastMove());
+    // System.err.printf("MOVES : %s\n", board.getLastMove());
 
     if (haveToSwich)
       IllegalyEfficientBoard.swapCurrentPlayer(board);
