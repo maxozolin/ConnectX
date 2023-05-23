@@ -234,7 +234,7 @@ public class MxLxPlayer implements CXPlayer {
     }
 
 
-    System.err.printf("MOVES : %s\n", board.getLastMove());
+    //System.err.printf("MOVES : %s\n", board.getLastMove());
     for (Integer m : board.getAvailableColumns()) {
       board.markColumn(m);
 
@@ -251,7 +251,7 @@ public class MxLxPlayer implements CXPlayer {
         try{
           CXGameState gs = board.markColumn(haveToBlock);
           board.unmarkColumn();
-          System.err.printf("Considering %s: %s\nLocalWin: %s\n", m, gs, localMyWin);
+          //System.err.printf("Considering %s: %s\nLocalWin: %s\n", m, gs, localMyWin);
           if(gs == localMyWin){
             ret.add(m);
           }
@@ -262,7 +262,7 @@ public class MxLxPlayer implements CXPlayer {
       }
       board.unmarkColumn();
     }
-    System.err.printf("MOVES : %s\n", board.getLastMove());
+    //System.err.printf("MOVES : %s\n", board.getLastMove());
 
     if (haveToSwich)
       IllegalyEfficientBoard.swapCurrentPlayer(board);
