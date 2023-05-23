@@ -92,7 +92,7 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumnDebug(CXBoard B) {
     int col = B.getAvailableColumns()[0];
-    // StreakBoard streakB = new StreakBoard(B);
+    StreakBoard streakB = new StreakBoard(B);
     Heuristics heuristics = new Heuristics();
     heuristics.debugStreakDisplayer = debugDisplayer;
 
