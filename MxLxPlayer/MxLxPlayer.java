@@ -97,11 +97,11 @@ public class MxLxPlayer implements CXPlayer {
     heuristics.debugStreakDisplayer = debugDisplayer;
 
     if (checkDoubleAttackv2(B, myWin)) {
-      System.out.println("There is double attack for P1");
+      System.err.println("There is double attack for P1");
     }
 
     if (checkDoubleAttackv2(B, yourWin)) {
-      System.out.println("There is double attack for P2");
+      System.err.println("There is double attack for P2");
     }
     return col;
   }
@@ -147,13 +147,13 @@ public class MxLxPlayer implements CXPlayer {
 
     //Random choice because double attack for me, opponent can only block one
     if (datt1.size() != 0) {
-      System.out.printf("There is double attack for ME: %s\n", datt1);
+      System.out.printf("[+] Double Attack for ME: %s\n", datt1);
       return datt1.get(rand.nextInt(datt1.size()));
     }
 
     //To determine how i want to block Double Attack, estimate for connectivity
     if (datt2.size() != 0) {
-      System.out.printf("There is double attack for OPPONENT: %s\n", datt2);
+      System.out.printf("[-] Double Attack for OPPONENT: %s\n", datt2);
       return datt2.get(rand.nextInt(datt2.size()));
     }
 
