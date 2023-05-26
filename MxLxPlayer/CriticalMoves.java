@@ -32,6 +32,7 @@ public class CriticalMoves {
    * myWin: In what gameState is it considered my win
    * timeKeeper: TimeKeeper Instance to check the time
    */
+
   static public int singleMoveWin(CXBoard B, Integer[] L, CXGameState myWin) {
     for (Integer i : L) {
       CXGameState state = B.markColumn(i);

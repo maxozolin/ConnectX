@@ -41,6 +41,8 @@ public class MxLxPlayer implements CXPlayer {
   private Integer DEPTH = 5;
   public CXBoardPanel debugDrawPanel;
   private DebugStreakDisplayer debugDisplayer = new DebugStreakDisplayer();
+  private final CXCellState[] Player = {CXCellState.P1, CXCellState.P2};
+  private int currentMove;
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -52,6 +54,7 @@ public class MxLxPlayer implements CXPlayer {
     myWin = first ? CXGameState.WINP1 : CXGameState.WINP2;
     yourWin = first ? CXGameState.WINP2 : CXGameState.WINP1;
     timeKeeper = new TimeKeeper(timeout_in_secs);
+    currentMove = 0;
 
     // Forse non va qua ma nella prima mossa, per adesso metto qua
     CXBoard pretend_board = new CXBoard(M, N, K);
@@ -106,9 +109,13 @@ public class MxLxPlayer implements CXPlayer {
     return col;
   }
 
+  public boolean firstMove(){
+    currentMove += 1;
+    return currentMove==1;
+  }
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
-    // StreakBoard streakB = new StreakBoard(B);
+    StreakBoard streakB = new StreakBoard(B);
     Heuristics heuristics = new Heuristics();
     heuristics.debugStreakDisplayer = debugDisplayer;
 
@@ -120,6 +127,12 @@ public class MxLxPlayer implements CXPlayer {
 
     // System.out.printf("--- Looking for You---\n");
     List<Integer> datt2 = findDoubleAttacksv2(B, yourWin);
+
+    if(firstMove()){
+      System.out.println("[+] First move, putting in  center");
+      int cols = B.N;
+      return cols/2;
+    }
 
     int col = CriticalMoves.singleMoveWin(B, L, myWin);
     if (col != -1) {
@@ -153,7 +166,16 @@ public class MxLxPlayer implements CXPlayer {
     // To determine how i want to block Double Attack, estimate for connectivity
     if (datt2.size() != 0) {
       System.out.printf("[-] Double Attack for OPPONENT: %s\n", datt2);
-      return datt2.get(rand.nextInt(datt2.size()));
+      int move =  datt2.get(rand.nextInt(datt2.size()));
+      boolean move_stupid = true;
+      for(Integer sm : L_not_stupid){
+        if(sm==move){
+          move_stupid = false;
+        }
+      }
+      if(!move_stupid){
+        return move;
+      }
     }
 
     if (timeKeeper.ranOutOfTime())
@@ -164,30 +186,39 @@ public class MxLxPlayer implements CXPlayer {
     int maxScore = Integer.MIN_VALUE;
     int bestMove = -1;
 
-    int positionScore = minimax2(
-        (StreakBoard) B,
-        true,
-        Integer.MIN_VALUE,
-        Integer.MAX_VALUE,
-        0,
-        maxDepth);
-
-    for (Integer colMove : L) {
-      B.markColumn(colMove);
-      int score = minimax2(
-          (StreakBoard) B,
-          false,
+    try{
+      int positionScore = minimax2(
+          (StreakBoard) streakB,
+          true,
           Integer.MIN_VALUE,
           Integer.MAX_VALUE,
           0,
           maxDepth);
-      B.unmarkColumn();
 
-      // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
-      if (maxScore <= score) {
-        maxScore = score;
-        bestMove = colMove;
+      System.out.printf("Position Score: %s\n",positionScore);
+
+      for (Integer colMove : L) {
+        streakB.markColumn(colMove);
+        int score = minimax2(
+            (StreakBoard) streakB,
+            false,
+            Integer.MIN_VALUE,
+            Integer.MAX_VALUE,
+            0,
+            maxDepth);
+        streakB.unmarkColumn();
+        System.out.printf("\tMove [%s] evaluation: %s\n",colMove, score);
+
+        // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
+        if (maxScore <= score) {
+          maxScore = score;
+          bestMove = colMove;
+        }
       }
+    } catch (TimeoutException ex){
+      //does not bother
+      System.err.println("[!] Timeout from MINIMAX!");
+      return save;
     }
     if (bestMove != -1) {
       return bestMove;
@@ -207,6 +238,7 @@ public class MxLxPlayer implements CXPlayer {
     final CXGameState localOpponentSide;
     final CXCellState localPlayer;
 
+    Heuristics localHeuristic = new Heuristics();
     localPlayer = Player[B.currentPlayer()];
     localMySide = localPlayer == CXCellState.P1 ? CXGameState.WINP1 : CXGameState.WINP2;
 
@@ -249,10 +281,10 @@ public class MxLxPlayer implements CXPlayer {
     if (depth == depthMax) {
       // Euristica
       int sign = maximizing ? +1 : -1;
-      return sign * Heuristics.score(B, localPlayer, Player[B.currentPlayer()]);
+      return sign * localHeuristic.score(B, localPlayer, Player[B.currentPlayer()]);
     }
 
-    int canWinSingleMove = singleMoveWin(B, B.getAvailableColumns(), localMySide);
+    int canWinSingleMove = CriticalMoves.singleMoveWin(B, B.getAvailableColumns(), localMySide);
 
     if (canWinSingleMove != -1) {
       // System.out.println("MAXIMIZING HERE!!!!");
@@ -304,7 +336,7 @@ public class MxLxPlayer implements CXPlayer {
         }
       }
 
-      int connectivityScore = Heuristics.estimateConnectivity(B, Player[B.currentPlayer()]);
+      int connectivityScore = localHeuristic.estimateConnectivity(B, Player[B.currentPlayer()]);
       movesWithScores.add(new Pair<>(i, connectivityScore));
 
       B.unmarkColumn();
@@ -343,8 +375,7 @@ public class MxLxPlayer implements CXPlayer {
   }
 
   private void checktime() throws TimeoutException {
-    if ((System.currentTimeMillis() - startTime) / 1000.0 >= timeoutTime * (99.0 / 100.0))
-      throw new TimeoutException();
+    timeKeeper.checktime();
   }
 
   private boolean checkDoubleAttack_twoWins(CXBoard board, Integer startIndex,
