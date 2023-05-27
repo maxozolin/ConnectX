@@ -60,7 +60,7 @@ public class MxLxPlayer implements CXPlayer {
     // Trying a short minimax to determine optimal depth
     CXBoard pretend_board = new CXBoard(M, N, K);
     StreakBoard sb = new StreakBoard(pretend_board);
-    int optimalDepth = getOptimalDepth(sb, timeout_in_secs);
+    optimalDepth = getOptimalDepth(sb, timeout_in_secs);
   }
 
   /**
@@ -131,6 +131,7 @@ public class MxLxPlayer implements CXPlayer {
     System.err.println("[DEBUG] Total execution time: " + execTimeCol + "\n[DEBUG] Timeout:" + timeout_in_secs);
     //Without Alpha Beta would be this. With alpha beta more efficient, but this is a bit too wide just to be safe.
     double ret = Math.log(timeout_ms/execTimeCol)/Math.log(nColumns); 
+    ret = ret+5;
     return (int)ret;
   }
 
@@ -202,22 +203,11 @@ public class MxLxPlayer implements CXPlayer {
     if (timeKeeper.ranOutOfTime())
       return save;
 
-    int maxDepth = 5;
-
     int maxScore = Integer.MIN_VALUE;
     int bestMove = -1;
+    System.err.printf("[DEBUG] Optimal depth: %s\n", optimalDepth);
 
     try{
-      int positionScore = minimax2(
-          (StreakBoard) streakB,
-          true,
-          Integer.MIN_VALUE,
-          Integer.MAX_VALUE,
-          0,
-          optimalDepth);
-
-      System.out.printf("Position Score: %s\n",positionScore);
-
       for (Integer colMove : L) {
         streakB.markColumn(colMove);
         int score = minimax2(
@@ -228,17 +218,18 @@ public class MxLxPlayer implements CXPlayer {
             0,
             optimalDepth);
         streakB.unmarkColumn();
-        System.out.printf("\tMove [%s] evaluation: %s\n",colMove, score);
-
-        // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
+        //System.out.printf("\tMove [%s] evaluation: %s\n",colMove, score);
         if (maxScore <= score) {
           maxScore = score;
           bestMove = colMove;
         }
       }
     } catch (TimeoutException ex){
-      //does not bother
       System.err.println("[!] Timeout from MINIMAX!");
+      //If we timed out reduce the depth
+      if(optimalDepth>0){
+        optimalDepth -=1;
+      }
       return save;
     }
     if (bestMove != -1) {
