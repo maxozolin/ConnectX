@@ -122,11 +122,6 @@ public class MxLxPlayer implements CXPlayer {
     Integer[] L = B.getAvailableColumns();
     int save = L[rand.nextInt(L.length)]; // Save a random column
 
-    // System.out.printf("--- Looking for Me ---\n");
-    List<Integer> datt1 = findDoubleAttacksv2(B, myWin);
-
-    // System.out.printf("--- Looking for You---\n");
-    List<Integer> datt2 = findDoubleAttacksv2(B, yourWin);
 
     if(firstMove()){
       System.out.println("[+] First move, putting in  center");
@@ -157,6 +152,11 @@ public class MxLxPlayer implements CXPlayer {
       save = L_not_stupid[rand.nextInt(L_not_stupid.length)]; // Save a random column that is not stupid
     }
 
+    // System.out.printf("--- Looking for Me ---\n");
+    List<Integer> datt1 = findDoubleAttacksv2(B, myWin);
+
+    // System.out.printf("--- Looking for You---\n");
+    List<Integer> datt2 = findDoubleAttacksv2(B, yourWin);
     // Random choice because double attack for me, opponent can only block one
     if (datt1.size() != 0) {
       System.out.printf("[+] Double Attack for ME: %s\n", datt1);
