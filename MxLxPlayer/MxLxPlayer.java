@@ -136,7 +136,6 @@ public class MxLxPlayer implements CXPlayer {
 
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
-    StreakBoard streakB = new StreakBoard(B);
     Heuristics heuristics = new Heuristics();
     heuristics.debugStreakDisplayer = debugDisplayer;
 
@@ -184,7 +183,7 @@ public class MxLxPlayer implements CXPlayer {
       return datt1.get(rand.nextInt(datt1.size()));
     }
 
-    // To determine how i want to block Double Attack, estimate for connectivity
+    // If opponent has a move that is double attack I have to block
     if (datt2.size() != 0) {
       System.out.printf("[-] Double Attack for OPPONENT: %s\n", datt2);
       int move =  datt2.get(rand.nextInt(datt2.size()));
@@ -207,6 +206,7 @@ public class MxLxPlayer implements CXPlayer {
     System.err.printf("[DEBUG] Optimal depth: %s\n", optimalDepth);
 
     try{
+      StreakBoard streakB = new StreakBoard(B);
       for (Integer colMove : L) {
         streakB.markColumn(colMove);
         int score = minimax2(
