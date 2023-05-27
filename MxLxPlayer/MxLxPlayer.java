@@ -23,8 +23,6 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.TimeoutException;
 
-import javax.swing.border.Border;
-
 /**
  * Software player only a bit smarter than random.
  * <p>
@@ -43,6 +41,7 @@ public class MxLxPlayer implements CXPlayer {
   private DebugStreakDisplayer debugDisplayer = new DebugStreakDisplayer();
   private final CXCellState[] Player = {CXCellState.P1, CXCellState.P2};
   private int currentMove;
+  private int optimalDepth; //Deepest we can go without timing out
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -54,11 +53,14 @@ public class MxLxPlayer implements CXPlayer {
     myWin = first ? CXGameState.WINP1 : CXGameState.WINP2;
     yourWin = first ? CXGameState.WINP2 : CXGameState.WINP1;
     timeKeeper = new TimeKeeper(timeout_in_secs);
+    timeKeeper.setStartTime(System.currentTimeMillis());
     currentMove = 0;
 
-    // Forse non va qua ma nella prima mossa, per adesso metto qua
+
+    // Trying a short minimax to determine optimal depth
     CXBoard pretend_board = new CXBoard(M, N, K);
-    // decisionTree = new DecisionTree(pretend_board, first, DEPTH);
+    StreakBoard sb = new StreakBoard(pretend_board);
+    int optimalDepth = getOptimalDepth(sb, timeout_in_secs);
   }
 
   /**
@@ -71,6 +73,7 @@ public class MxLxPlayer implements CXPlayer {
    */
 
   public int selectColumn(CXBoard B) {
+    currentMove += 1;
     debugDisplayer.clear();
     int col = B.getAvailableColumns()[0];
     try {
@@ -93,26 +96,44 @@ public class MxLxPlayer implements CXPlayer {
 
   }
 
-  public int selectColumnDebug(CXBoard B) {
-    int col = B.getAvailableColumns()[0];
-    StreakBoard streakB = new StreakBoard(B);
-    Heuristics heuristics = new Heuristics();
-    heuristics.debugStreakDisplayer = debugDisplayer;
-
-    if (checkDoubleAttackv2(B, myWin)) {
-      System.err.println("There is double attack for P1");
-    }
-
-    if (checkDoubleAttackv2(B, yourWin)) {
-      System.err.println("There is double attack for P2");
-    }
-    return col;
+  public boolean firstMove(CXBoard B){
+    return B.numOfMarkedCells() < 2;
   }
 
-  public boolean firstMove(){
-    currentMove += 1;
-    return currentMove==1;
+  private int getOptimalDepth(StreakBoard streakB, long timeout_in_secs){
+    int DEFAULT_ERR = 3;
+
+    final long startTime = System.currentTimeMillis();
+    try{
+      int positionScore = minimax2(
+          (StreakBoard) streakB,
+          true,
+          Integer.MIN_VALUE,
+          Integer.MAX_VALUE,
+          0,
+          2);
+    } catch(Exception ex){
+      System.err.println(ex);
+      System.err.println("Error in MiniMax when getting optimal depth");
+      System.err.println("Defaulting to "+DEFAULT_ERR);
+      return DEFAULT_ERR;
+    }
+
+    final long endTime = System.currentTimeMillis();
+    final long execTime = (endTime - startTime);
+
+    System.err.println("[DEBUG] Total execution time: " + execTime + "\n[DEBUG] Timeout:" + timeout_in_secs);
+    long timeout_ms = timeout_in_secs*1000;
+    //Aproximate
+    int nColumns = streakB.N;
+    //Account for the depth of 2
+    long execTimeCol=(execTime/nColumns)+1;
+    System.err.println("[DEBUG] Total execution time: " + execTimeCol + "\n[DEBUG] Timeout:" + timeout_in_secs);
+    //Without Alpha Beta would be this. With alpha beta more efficient, but this is a bit too wide just to be safe.
+    double ret = Math.log(timeout_ms/execTimeCol)/Math.log(nColumns); 
+    return (int)ret;
   }
+
   public int selectColumnBase(CXBoard B) {
     timeKeeper.setStartTime(System.currentTimeMillis());
     StreakBoard streakB = new StreakBoard(B);
@@ -123,7 +144,7 @@ public class MxLxPlayer implements CXPlayer {
     int save = L[rand.nextInt(L.length)]; // Save a random column
 
 
-    if(firstMove()){
+    if(firstMove(B)){
       System.out.println("[+] First move, putting in  center");
       int cols = B.N;
       return cols/2;
@@ -181,7 +202,7 @@ public class MxLxPlayer implements CXPlayer {
     if (timeKeeper.ranOutOfTime())
       return save;
 
-    int maxDepth = 3;
+    int maxDepth = 5;
 
     int maxScore = Integer.MIN_VALUE;
     int bestMove = -1;
@@ -193,7 +214,7 @@ public class MxLxPlayer implements CXPlayer {
           Integer.MIN_VALUE,
           Integer.MAX_VALUE,
           0,
-          maxDepth);
+          optimalDepth);
 
       System.out.printf("Position Score: %s\n",positionScore);
 
@@ -205,7 +226,7 @@ public class MxLxPlayer implements CXPlayer {
             Integer.MIN_VALUE,
             Integer.MAX_VALUE,
             0,
-            maxDepth);
+            optimalDepth);
         streakB.unmarkColumn();
         System.out.printf("\tMove [%s] evaluation: %s\n",colMove, score);
 
@@ -243,6 +264,9 @@ public class MxLxPlayer implements CXPlayer {
     localMySide = localPlayer == CXCellState.P1 ? CXGameState.WINP1 : CXGameState.WINP2;
 
     localOpponentSide = localPlayer == CXCellState.P1 ? CXGameState.WINP2 : CXGameState.WINP1;
+    //System.err.println("[DEBUG] Minimax Called");
+    //System.err.printf("[DEBUG] \tDepth: %s\n", depth);
+    //System.err.printf("[DEBUG] \tDepthMax: %s\n", depthMax);
     // localOpponentSide = Player[1-B.currentPlayer()];
 
     /*

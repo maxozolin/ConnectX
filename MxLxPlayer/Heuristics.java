@@ -19,6 +19,7 @@ public class Heuristics {
 
         return Math.abs(c1 - c2) < 20;
     }
+
     /*
      * public static int estimateDominance(StreakBoard board, CXCellState player) {
      * CXCellState opponent;

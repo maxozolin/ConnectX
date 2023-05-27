@@ -13,6 +13,10 @@ public class TimeKeeper {
         keeperTimeout = timeout;
     }
 
+    public int getTimeout(){
+      return keeperTimeout;
+    }
+
     public void setStartTime(long startTime){
         keeperStartTime = startTime;
     }
