@@ -168,6 +168,7 @@ public class L2 implements CXPlayer {
                     maxDepth
             );
 
+            System.err.println("-----------");
             for (Integer colMove : L) {
                 B.markColumn(colMove);
                 int score = minimax2(
@@ -179,6 +180,7 @@ public class L2 implements CXPlayer {
                         maxDepth
                 );
                 B.unmarkColumn();
+                System.err.printf("Considering [%s]: %s\n", colMove, score);
 
                 // System.out.println("MOVE AT COL " + colMove + " | SCORE: " + score);
                 if (maxScore <= score) {
