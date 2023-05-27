@@ -131,7 +131,6 @@ public class MxLxPlayer implements CXPlayer {
     System.err.println("[DEBUG] Total execution time: " + execTimeCol + "\n[DEBUG] Timeout:" + timeout_in_secs);
     //Without Alpha Beta would be this. With alpha beta more efficient, but this is a bit too wide just to be safe.
     double ret = Math.log(timeout_ms/execTimeCol)/Math.log(nColumns); 
-    ret = ret+5;
     return (int)ret;
   }
 
