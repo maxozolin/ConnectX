@@ -101,7 +101,7 @@ public class MxLxPlayer implements CXPlayer {
   }
 
   private int getOptimalDepth(StreakBoard streakB, long timeout_in_secs){
-    int DEFAULT_ERR = 3;
+    int DEFAULT_ERR = 1;
 
     final long startTime = System.currentTimeMillis();
     try{
@@ -115,7 +115,7 @@ public class MxLxPlayer implements CXPlayer {
     } catch(Exception ex){
       System.err.println(ex);
       System.err.println("Error in MiniMax when getting optimal depth");
-      System.err.println("Defaulting to "+DEFAULT_ERR);
+      System.err.println("Defaulting to "+ DEFAULT_ERR);
       return DEFAULT_ERR;
     }
 
