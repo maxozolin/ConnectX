@@ -7,8 +7,6 @@ import connectx.CXCellState;
 import connectx.CXGameState;
 import connectx.CXPlayer;
 import connectx.MxLxPlayer.IllegalyEfficientBoard;
-import connectx.MxLxPlayer.DecisionTree;
-import connectx.MxLxPlayer.TreePrinter;
 import connectx.MxLxPlayer.TimeKeeper;
 import connectx.MxLxPlayer.CriticalMoves;
 
@@ -35,7 +33,6 @@ public class MxLxPlayer implements CXPlayer {
   private CXGameState myWin;
   private CXGameState yourWin;
   private TimeKeeper timeKeeper;
-  private DecisionTree decisionTree;
   private Integer DEPTH = 5;
   public CXBoardPanel debugDrawPanel;
   private DebugStreakDisplayer debugDisplayer = new DebugStreakDisplayer();
