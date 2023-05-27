@@ -144,7 +144,7 @@ public class MxLxPlayer implements CXPlayer {
 
 
     if(firstMove(B)){
-      System.out.println("[+] First move, putting in  center");
+      System.err.println("[+] First move, putting in  center");
       int cols = B.N;
       return cols/2;
     }
@@ -232,9 +232,16 @@ public class MxLxPlayer implements CXPlayer {
       return save;
     }
     if (bestMove != -1) {
-      return bestMove;
+      boolean bestMove_stupid = true;
+      for(Integer sm : L_not_stupid){
+        if(sm==bestMove){
+          bestMove_stupid = false;
+        }
+      }
+      if(!bestMove_stupid){
+        return bestMove;
+      }
     }
-
     return save;
   }
 

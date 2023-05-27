@@ -43,6 +43,7 @@ public class CriticalMoves {
     return -1;
   }
 
+
   /*
    * Single move block implementation was O(L.size()^{2}), which is bad.
    * We can make it O(L.size())
