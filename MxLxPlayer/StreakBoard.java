@@ -1,9 +1,7 @@
 package connectx.MxLxPlayer;
 
 import connectx.*;
-import connectx.MxLxPlayer.CellCoord;
 
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,14 +10,11 @@ import java.util.List;
 
 public class StreakBoard extends CXBoard {
 
-    protected HashMap<CellCoord, List<Streak>> ownStreaksMap;
+    // protected HashMap<CXCell, List<List<CXCell>>> streaksMap;
 
     protected List<Streak> streaksP1;
+
     protected List<Streak> streaksP2;
-
-    protected List<CellCoord> movesP1;
-    protected List<CellCoord> movesP2;
-
     CXCellState[][] packageBoard; //This exposes the protected board
 
     public List<Streak> getStreaksP1() {
@@ -43,10 +38,6 @@ public class StreakBoard extends CXBoard {
         this.packageBoard = super.B;
         streaksP1 = new ArrayList<>();
         streaksP2 = new ArrayList<>();
-
-        ownStreaksMap = new HashMap<CellCoord, List<Streak>>();
-        movesP1 = new ArrayList<>();
-        movesP2 = new ArrayList<>();
     }
 
     public StreakBoard(CXBoard cxBoard) {
@@ -54,10 +45,6 @@ public class StreakBoard extends CXBoard {
         this.packageBoard = super.B;
         streaksP1 = new ArrayList<>();
         streaksP2 = new ArrayList<>();
-
-        ownStreaksMap = new HashMap<CellCoord, List<Streak>>();
-        movesP1 = new ArrayList<>();
-        movesP2 = new ArrayList<>();
 
         for (CXCell c : cxBoard.getMarkedCells()) {
             this.markColumn(c.j);
@@ -78,7 +65,6 @@ public class StreakBoard extends CXBoard {
 
         final CXCell lastCell = getLastMove();
         insertStreaksIntoCell(lastCell, currentPlayer);
-        updateStreaks(lastCell, ownStreaksMap);
         updateStreaks(lastCell, streaksP1);
         updateStreaks(lastCell, streaksP2);
 
@@ -105,24 +91,16 @@ public class StreakBoard extends CXBoard {
      */
     private void insertStreaksIntoCell(CXCell cell, int currentPlayer) {
         final List<Streak> streaksList = calcStreaksForNewCell(cell);
-        CellCoord cellCoordinate = new CellCoord(this, cell.i, cell.j);
-        ownStreaksMap.put(cellCoordinate, streaksList);
 
         // streaksMap.put(cell, streaksList);
 
         for (Streak streak : streaksList) {
             if (currentPlayer == 0) {
-                movesP1.add(cellCoordinate);
                 substituteOrAddStreak(streaksP1, streak);
             } else {
-                movesP2.add(cellCoordinate);
                 substituteOrAddStreak(streaksP2, streak);
             }
         }
-    }
-
-    private void updateStreaks(CXCell lastCell, HashMap<CellCoord, List<Streak>> pStreakMap) {
-
     }
 
     private void updateStreaks(CXCell lastCell, List<Streak> streaks) {
