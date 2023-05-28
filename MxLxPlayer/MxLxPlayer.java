@@ -39,6 +39,7 @@ public class MxLxPlayer implements CXPlayer {
   private final CXCellState[] Player = {CXCellState.P1, CXCellState.P2};
   private int currentMove;
   private int optimalDepth; //Deepest we can go without timing out
+  private StreakBoard playerStreakBoard; //Deepest we can go without timing out
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -57,6 +58,7 @@ public class MxLxPlayer implements CXPlayer {
     // Trying a short minimax to determine optimal depth
     CXBoard pretend_board = new CXBoard(M, N, K);
     StreakBoard sb = new StreakBoard(pretend_board);
+    //playerStreakBoard = new StreakBoard(pretend_board);
     optimalDepth = getOptimalDepth(sb, timeout_in_secs);
   }
 
@@ -68,7 +70,6 @@ public class MxLxPlayer implements CXPlayer {
    * cases do not apply, selects a random column.
    * </p>
    */
-
   public int selectColumn(CXBoard B) {
     currentMove += 1;
     debugDisplayer.clear();
@@ -176,13 +177,13 @@ public class MxLxPlayer implements CXPlayer {
     List<Integer> datt2 = findDoubleAttacksv2(B, yourWin);
     // Random choice because double attack for me, opponent can only block one
     if (datt1.size() != 0) {
-      System.out.printf("[+] Double Attack for ME: %s\n", datt1);
+      System.err.printf("[+] Double Attack for ME: %s\n", datt1);
       return datt1.get(rand.nextInt(datt1.size()));
     }
 
     // If opponent has a move that is double attack I have to block
     if (datt2.size() != 0) {
-      System.out.printf("[-] Double Attack for OPPONENT: %s\n", datt2);
+      System.err.printf("[-] Double Attack for OPPONENT: %s\n", datt2);
       int move =  datt2.get(rand.nextInt(datt2.size()));
       boolean move_stupid = true;
       for(Integer sm : L_not_stupid){
@@ -203,7 +204,8 @@ public class MxLxPlayer implements CXPlayer {
     System.err.printf("[DEBUG] Optimal depth: %s\n", optimalDepth);
 
     try{
-      StreakBoard streakB = new StreakBoard(B);
+      //StreakBoard streakB = new StreakBoard(B);
+      StreakBoard streakB = playerStreakBoard;
       for (Integer colMove : L) {
         streakB.markColumn(colMove);
         int score = minimax2(
@@ -438,6 +440,7 @@ public class MxLxPlayer implements CXPlayer {
   }
 
   private List<Integer> findDoubleAttacksv2(CXBoard board, CXGameState winningState) {
+    // ------------------- PART 1 ----------------------
     boolean haveToSwich = (winningState == yourWin);
     CXGameState localOpponentWin = winningState == yourWin ? myWin : yourWin;
     CXGameState localMyWin = winningState == yourWin ? yourWin : myWin;
@@ -466,6 +469,7 @@ public class MxLxPlayer implements CXPlayer {
       board.unmarkColumn();
     }
 
+    // ------------------- PART 2 ----------------------
     // System.err.printf("MOVES : %s\n", board.getLastMove());
     for (Integer m : board.getAvailableColumns()) {
       board.markColumn(m);
@@ -542,7 +546,7 @@ public class MxLxPlayer implements CXPlayer {
         }
       }
       if (count == sb.X) {
-        System.out.println("PLAYER " + playerName + " HAS WON");
+        System.err.println("PLAYER " + playerName + " HAS WON");
       }
       if (count == sb.X - 1) {
         for (CellCoord cell : streak.getCells()) {

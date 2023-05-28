@@ -149,7 +149,7 @@ public class CriticalMoves {
         }
       }
       if (count == sb.X) {
-        System.out.println("PLAYER " + playerName + " HAS WON");
+        System.err.println("PLAYER " + playerName + " HAS WON");
       }
       if (count == sb.X - 1) {
         for (CellCoord cell : streak.getCells()) {

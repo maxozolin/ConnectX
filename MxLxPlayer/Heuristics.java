@@ -90,7 +90,7 @@ public class Heuristics {
         long scoreB = (long) -estimateConnectivity(board, opponent);
         // TODO: Remove after debug phase is finished
         if (count > 1000 && count < 1010) {
-            System.out.println(
+            System.err.println(
                     "[DEBUG] connectivity player " + player.toString() + ": " + estimateConnectivity(board, player));
         }
         count++;
