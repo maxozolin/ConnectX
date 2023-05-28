@@ -1,6 +1,7 @@
 package connectx.MxLxPlayer;
 
 import connectx.CXCellState;
+import java.util.Objects;
 
 public class CellCoord {
     private final StreakBoard board;
@@ -20,8 +21,24 @@ public class CellCoord {
         this.j = j;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        //Streak streak = (Streak) o;
+        if (this == o)
+            return true;
+        if (!(o instanceof CellCoord))
+            return false;
+        CellCoord cellCoord = (CellCoord) o;
+        boolean ret = this.hashCode() == cellCoord.hashCode();
+        return ret;
+    }
 
-    //public final CXCellState state;
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.i, this.j, this.board);
+    }
+
+    // public final CXCellState state;
     public CXCellState getState() {
         return board.packageBoard[i][j];
     }
