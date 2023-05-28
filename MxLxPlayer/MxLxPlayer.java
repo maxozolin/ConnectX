@@ -39,7 +39,6 @@ public class MxLxPlayer implements CXPlayer {
   private final CXCellState[] Player = {CXCellState.P1, CXCellState.P2};
   private int currentMove;
   private int optimalDepth; //Deepest we can go without timing out
-  private StreakBoard playerStreakBoard; //Deepest we can go without timing out
 
   /* Default empty constructor */
   public MxLxPlayer() {
@@ -58,7 +57,6 @@ public class MxLxPlayer implements CXPlayer {
     // Trying a short minimax to determine optimal depth
     CXBoard pretend_board = new CXBoard(M, N, K);
     StreakBoard sb = new StreakBoard(pretend_board);
-    //playerStreakBoard = new StreakBoard(pretend_board);
     optimalDepth = getOptimalDepth(sb, timeout_in_secs);
   }
 
@@ -204,8 +202,7 @@ public class MxLxPlayer implements CXPlayer {
     System.err.printf("[DEBUG] Optimal depth: %s\n", optimalDepth);
 
     try{
-      //StreakBoard streakB = new StreakBoard(B);
-      StreakBoard streakB = playerStreakBoard;
+      StreakBoard streakB = new StreakBoard(B);
       for (Integer colMove : L) {
         streakB.markColumn(colMove);
         int score = minimax2(
