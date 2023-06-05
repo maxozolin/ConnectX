@@ -29,7 +29,7 @@ public class MxLxHacker implements CXPlayer {
 
     try {
       long pid = ProcessHandle.current().pid();
-      System.out.println(pid);
+      System.err.println(pid);
 
       Process process =
           new ProcessBuilder("java", "-jar", "MxLxHacker/attacher/Attacher.jar", Long.toString(pid))
@@ -37,9 +37,9 @@ public class MxLxHacker implements CXPlayer {
               .start();
       Integer ret;
       ret = process.waitFor();
-      System.out.println(Integer.toString(ret));
+      System.err.println(Integer.toString(ret));
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      System.err.println(e.getMessage());
     }
     //try{
     //  tempfile = Files.createTempFile("LHLock", ".tmp");
@@ -56,14 +56,14 @@ public class MxLxHacker implements CXPlayer {
       String l = allLines.get(0);
       exists = (Long.parseLong(allLines.get(0)) == pid);
     } catch (Exception e){
-      System.out.println(e.getMessage());
+      System.err.println(e.getMessage());
     } 
     
     try  {
       Path path = tempfile;
       Files.write(path, pid.toString().getBytes());
     } catch (Exception e){
-      System.out.println(e.getMessage());
+      System.err.println(e.getMessage());
     } 
     
     return exists;
@@ -80,7 +80,7 @@ public class MxLxHacker implements CXPlayer {
 
 
       //long pid = ProcessHandle.current().pid();
-      //System.out.println(pid);
+      //System.err.println(pid);
 
       //if(filelock_present(pid)){
       //  return;
@@ -92,9 +92,9 @@ public class MxLxHacker implements CXPlayer {
       //        .start();
       //Integer ret;
       //ret = process.waitFor();
-      //System.out.println(Integer.toString(ret));
+      //System.err.println(Integer.toString(ret));
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      System.err.println(e.getMessage());
     }
   }
 

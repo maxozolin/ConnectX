@@ -28,7 +28,7 @@ public class Launcher {
   String[] a = new String[10];
 
   static {
-    System.out.println("SufMainAgent static block run...");
+    System.err.println("SufMainAgent static block run...");
   }
   private static Instrumentation instrumentation = null;
 
@@ -48,16 +48,16 @@ public class Launcher {
       }
   }
   public static void main(String[] args) throws Exception {
-    System.out.println("Hi");
+    System.err.println("Hi");
   }
   */
 
   public static void premain(String agentArgs, Instrumentation inst) {
-    System.out.println("===PREMAIN====");
+    System.err.println("===PREMAIN====");
   }
   public static void agentmain(String agentArgs, Instrumentation inst) {
     Launcher.instrumentation = inst;
-    System.out.println("SufMainAgent agentArgs: " + agentArgs);
+    System.err.println("SufMainAgent agentArgs: " + agentArgs);
     Class<?>[] classes = inst.getAllLoadedClasses();
 
     // var TargetClasses = {"connectx.CXBoard","connectx.CXBoardPanel"};
@@ -71,7 +71,7 @@ public class Launcher {
         try {
           inst.retransformClasses(ncl);
         } catch (Exception e) {
-          System.out.println(e.getMessage());
+          System.err.println(e.getMessage());
         }
       }
     }
@@ -81,7 +81,7 @@ public class Launcher {
     try {
       inst.retransformClasses(classes);
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      System.err.println(e.getMessage());
     }
   }
 
@@ -92,7 +92,7 @@ public class Launcher {
         throws IllegalClassFormatException {
       String TargetClassTag = "connectx/CXBoard";
       if (className.contains(TargetClassTag)) {
-        System.out.println("SufMainAgent transform Class:" + className);
+        System.err.println("SufMainAgent transform Class:" + className);
         // load the bytecode from the .class file
         //
         try {
@@ -145,13 +145,13 @@ public class Launcher {
           // ClassPool_insertClassPath_str.invoke(myInitClassPool,
           // "/home/crimson/uni/algoritmi/proj/CXGame1.0/");
 
-          System.out.printf("INITIALIZED_CLASSPOOL: %s\n", myInitClassPool);
+          System.err.printf("INITIALIZED_CLASSPOOL: %s\n", myInitClassPool);
 
           Method classPool_get = ClassPool_class.getMethod("get", String.class);
           Method classPool_getMethod =
               ClassPool_class.getMethod("getMethod", String.class, String.class);
 
-          System.out.printf("Descriptor: %s\n", descriptor);
+          System.err.printf("Descriptor: %s\n", descriptor);
           try {
             String[] cArg3 = new String[1];
             cArg3[0] = (String) descriptor;
@@ -198,7 +198,7 @@ public class Launcher {
             var new_board_class = CtMethod_getDeclaringClass.invoke(mark_board_method);
             byte[] newClass = (byte[]) CtClass_toByteCode.invoke(new_board_class);
             CtClass_detach.invoke(new_board_class);
-            System.out.printf("BoardMeth: %s\n", mark_board_method);
+            System.err.printf("BoardMeth: %s\n", mark_board_method);
             return newClass;
 
           } catch (Exception e) {
@@ -215,11 +215,11 @@ public class Launcher {
 
         // try {
         //   var urloc = classBeingRedefined.getProtectionDomain().getCodeSource().getLocation();
-        //   System.out.println(urloc);
+        //   System.err.println(urloc);
         //   URL url = new URL(urloc,
         //       // NOTGOOD
         //       className.replaceAll("CXBoard", "MYCXBoard").replace(".", "/") + ".class");
-        //   System.out.println(url);
+        //   System.err.println(url);
         //   InputStream classStream = url.openStream();
         //   byte[] arr = classStream.readAllBytes();
 
@@ -227,17 +227,17 @@ public class Launcher {
         //  ClassDefinition[] cs = new ClassDefinition[1];
         //  cs[0] = definition;
         //  if (instrumentation == null) {
-        //    System.out.println("NO Instrumentation");
+        //    System.err.println("NO Instrumentation");
         //  }
         //  Launcher.instrumentation.redefineClasses(cs);
         //  Path path = Paths.get("/tmp/CXBoardClass");
         //  try {
         //    Files.write(path, arr);
         //  } catch (Exception e) {
-        //    System.out.println(e.getMessage());
+        //    System.err.println(e.getMessage());
         //  }
         //} catch (Exception e) {
-        //  System.out.println(e.getMessage());
+        //  System.err.println(e.getMessage());
         //}
       }
 
@@ -245,7 +245,7 @@ public class Launcher {
       // try{
       //   Files.write(path, arr);
       // } catch (Exception e){
-      //     System.out.println(e.getMessage());
+      //     System.err.println(e.getMessage());
       // }
       return classfileBuffer;
     }

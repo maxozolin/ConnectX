@@ -1,16 +1,16 @@
 import com.sun.tools.attach.VirtualMachine;
 class Attacher{
   public static void main(String[] args) {
-      System.out.println("Hello Baeldung Reader!");
-      //System.out.println(String.join(",",args));
+      System.err.println("Hello Baeldung Reader!");
+      //System.err.println(String.join(",",args));
       String pid = args[0];
-      System.out.println(pid);
+      System.err.println(pid);
 
       try{
         VirtualMachine jvm = VirtualMachine.attach(pid);
         jvm.loadAgent("./MxLxHacker/Launcher.jar");
       } catch (Exception e){
-        System.out.println(e.getMessage());
+        System.err.println(e.getMessage());
       }
   }
 }
