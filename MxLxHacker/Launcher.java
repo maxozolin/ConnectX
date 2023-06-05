@@ -97,7 +97,7 @@ public class Launcher {
         //
         try {
           String javassist_location =
-              "/home/crimson/uni/algoritmi/proj/CXGame1.0/connectx/LH/jassist/javassist/javassist.jar";
+              "./MxLxHacker/jassist/javassist/javassist.jar";
           File jassist_jar = new File(javassist_location);
           URLClassLoader child = new URLClassLoader(new URL[] {jassist_jar.toURI().toURL()},
               javassist_location.getClass().getClassLoader());

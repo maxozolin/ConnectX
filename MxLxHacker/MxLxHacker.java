@@ -1,4 +1,4 @@
-package connectx.LH;
+package connectx.MxLxHacker;
 
 import com.sun.tools.attach.VirtualMachine;
 import connectx.CXBoard;
@@ -19,20 +19,20 @@ import java.nio.file.*;
 /**
  * Totally random software player.
  */
-public class LH implements CXPlayer {
+public class MxLxHacker implements CXPlayer {
   private Random rand;
   private int n_move;
   private int seed;
   private Path tempfile;
 
-  public LH() {
+  public MxLxHacker() {
 
     try {
       long pid = ProcessHandle.current().pid();
       System.out.println(pid);
 
       Process process =
-          new ProcessBuilder("java", "-jar", "LH/attacher/Attacher.jar", Long.toString(pid))
+          new ProcessBuilder("java", "-jar", "MxLxHacker/attacher/Attacher.jar", Long.toString(pid))
               .inheritIO()
               .start();
       Integer ret;
@@ -109,6 +109,6 @@ public class LH implements CXPlayer {
   }
 
   public String playerName() {
-    return "LH";
+    return "MxLxHacker";
   }
 }

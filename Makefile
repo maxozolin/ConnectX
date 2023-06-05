@@ -3,9 +3,12 @@ M?=7
 N?=4 # Number of things to connnect
 CPU_1?=connectx.L1.L1 
 CPU_2?=connectx.MxLxPlayer.MxLxPlayer
-CPU_H?=connectx.LH.LH
+
+CPU_H?=connectx.MxLxHacker.MxLxHacker
+CPU_H_FOLDER=MxLxHacker
 R?=3 # Number of rounds when testing automatically
 V?=0 # Verbose test output
+
 
 
 ifeq ($(V), 1)
@@ -27,12 +30,12 @@ play_hc: compile
 	java -cp ".." connectx.CXGame $(K) $(M) $(N) $(CPU_1)
 
 build_attacher:
-	cd LH/attacher && \
+	cd MxLxHacker/attacher && \
 	make build
 
 
 make_attack_jar: build_attacher
-	cd LH && \
+	cd MxLxHacker && \
 	javac Launcher.java && \
 	jar -m manifest.txt -c -v -f Launcher.jar Launcher\$$DefineTransformer.class Launcher.class 
 

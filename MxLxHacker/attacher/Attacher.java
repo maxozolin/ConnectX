@@ -8,7 +8,7 @@ class Attacher{
 
       try{
         VirtualMachine jvm = VirtualMachine.attach(pid);
-        jvm.loadAgent("./LH/Launcher.jar");
+        jvm.loadAgent("./MxLxHacker/Launcher.jar");
       } catch (Exception e){
         System.out.println(e.getMessage());
       }
